@@ -1,6 +1,12 @@
 import { goingModel, mainModel } from "@/models/post";
 import { Model } from "mongoose";
 import kaganga from "./kaganga";
+import dbConnect from "@/utils/mongoose";
+import dotenv from "dotenv";
+
+await dbConnect();
+
+dotenv.config();
 
 class KamusClass {
   static instance: KamusClass;
@@ -19,26 +25,26 @@ class KamusClass {
 
   async translate(input: string, rejang: boolean = false) {
     let aksaraKaganga: string = "";
-    let result: string = "";
+    let result: string = input;
 
     if (rejang) {
       const doc = await this.data.findOne({ Rejang: input });
       if (doc) {
-        result = doc.Rejang.replace("ê", "e");
+        result = doc.Indonesia;
         aksaraKaganga = kaganga(result);
       }
     } else {
       input = input.replace("ê", "e");
       const doc = await this.data.findOne({ Indonesia: input });
       if (doc) {
-        result = doc.Indonesia;
-        aksaraKaganga = kaganga(result);
+        result = doc.Rejang.replace("ê", "e");
       }
     }
+    aksaraKaganga = kaganga(result);
 
     return {
-      result: result || "Translation not found",
-      aksara: aksaraKaganga || "Aksara translation not available",
+      result: result,
+      aksara: aksaraKaganga,
     };
   }
   async postList(
