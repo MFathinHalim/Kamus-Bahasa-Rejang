@@ -47,7 +47,7 @@ export default function Home() {
               width={32}
               height={32}
             />
-            <span className="font-bold d-none d-sm-none d-lg-block text-2xl">Kamus Bahasa Rejang</span>
+            <span className="font-bold hidden md:block text-2xl">Kamus Bahasa Rejang</span>
           </div>
           <a href="#" className="text-lg text-gray-600 hover:underline">
             Daftar Kata
