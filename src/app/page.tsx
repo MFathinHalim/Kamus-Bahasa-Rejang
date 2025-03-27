@@ -46,19 +46,19 @@ export default function Home() {
   
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-6 bg-gray-100">
+    <div className="min-h-screen flex flex-col items-center p-6">
       <main className="w-full max-w-lg">
         <header className="w-full flex justify-between items-center pb-6">
-          <div className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-2 bg-gray-200 p-2 px-3 rounded-lg">
             <img
               src="https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665"
               alt="Logo"
               width={32}
               height={32}
             />
-            <span className="font-bold hidden md:block text-2xl">Kamus Bahasa Rejang</span>
-          </div>
-          <a href="#" className="text-lg text-gray-600 hover:underline">
+            <span className="font-bold hidden md:block text-xl">Kamus Bahasa Rejang</span>
+          </a>
+          <a href="/list" className="text-lg text-gray-600 hover:underline">
             Daftar Kata
           </a>
         </header>
