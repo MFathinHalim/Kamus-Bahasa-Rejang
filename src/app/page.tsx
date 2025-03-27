@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export default function Home() {
@@ -19,7 +19,10 @@ export default function Home() {
       if (!response.ok) throw new Error("Translation not found");
 
       const data = await response.json();
-      if(aksaraOnly) { return setAksara(data) }
+      if (aksaraOnly) { 
+        setResult(inputWord)
+        return setAksara(data) 
+      }
       setResult(data.result);
       setAksara(data.aksara);
     } catch (error) {
@@ -33,8 +36,14 @@ export default function Home() {
   };
 
   const toggleAksaraOnly = async () => {
-    setAksaraOnly((prev) => !prev); // Toggles aksaraOnly mode
+    setAksaraOnly((prev) => !prev);
+    setResult(inputWord);
   };
+  
+  useEffect(() => {
+    if(inputWord) handleFetch();
+  }, [aksaraOnly]); 
+  
 
   return (
     <div className="min-h-screen flex flex-col items-center p-6 bg-gray-100">
@@ -56,7 +65,7 @@ export default function Home() {
 
         <h2 className="text-2xl font-semibold mt-4">Terjemahkan dari Bahasa</h2>
 
-        <div className="flex items-center justify-between mb-6 mt-2">
+        <div className="flex items-center justify-between mb-6 mt-2 gap-2">
           <div
             className="relative flex items-center w-50 h-8 bg-gray-300 rounded-full cursor-pointer"
             onClick={toggleMode}
@@ -77,7 +86,7 @@ export default function Home() {
 
           <button
             onClick={toggleAksaraOnly}
-            className={`${aksaraOnly ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"
+            className={`cursor-pointer ${aksaraOnly ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"
               } font-semibold py-2 px-4 rounded-lg`}
           >
             Aksara
@@ -88,28 +97,29 @@ export default function Home() {
           value={inputWord}
           onChange={(e) => setInputWord(e.target.value)}
           placeholder="Tulis kata/kalimat yang ingin diterjemahkan"
-          className="w-full p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-1 resize-none h-32 bg-gray-100"
+          className="w-full p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-1 resize-none h-32 bg-gray-200"
         />
 
         <button
           onClick={handleFetch}
-          className="w-full bg-red-400 hover:bg-red-500 text-white py-3 rounded-full text-xl font-semibold"
+          className="w-full bg-red-400 hover:bg-red-500 text-white py-3 rounded-full text-xl font-semibold cursor-pointer"
         >
           Terjemahkan
         </button>
-
-        <div className="mt-8">
-          <h6 className="text-2xl font-semibold mb-2 transition-opacity duration-300">
-            Hasil
-          </h6>
-          <div
-            className={`p-4 border rounded-lg bg-gray-100 text-gray-700 text-xl overflow-hidden`}
-          >
-            <span className={`block transition-all duration-200 ${aksaraOnly ? "h-0 opacity-0" : "h-auto opacity-100"
-              }`}>{result}</span>
-            <span className="rejang">{aksara}</span>
+        {result && (
+          <div className="mt-6">
+            <h6 className="text-2xl font-semibold mb-2 transition-opacity duration-300">
+              Hasil
+            </h6>
+            <div
+              className={`p-4 rounded-lg bg-gray-200 text-gray-700 text-xl overflow-hidden`}
+            >
+              <span className={`block transition-all duration-200 ${aksaraOnly ? "h-0 opacity-0" : "h-auto opacity-100"
+                }`}>{result}</span>
+              <span className="rejang">{aksara}</span>
+            </div>
           </div>
-        </div>
+        )}
 
         <footer className="mt-auto text-lg text-gray-500 py-4 w-full">
           © 2025, Fathin
