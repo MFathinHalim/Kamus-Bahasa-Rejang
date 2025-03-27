@@ -47,7 +47,7 @@ export default function Home() {
               width={32}
               height={32}
             />
-            <span className="font-bold text-2xl">Kamus Bahasa Rejang</span>
+            <span className="font-bold d-none d-md-block text-2xl">Kamus Bahasa Rejang</span>
           </div>
           <a href="#" className="text-lg text-gray-600 hover:underline">
             Daftar Kata
@@ -80,7 +80,7 @@ export default function Home() {
             className={`${aksaraOnly ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"
               } font-semibold py-2 px-4 rounded-lg`}
           >
-            {aksaraOnly ? "Aksara Only: ON" : "Aksara Only: OFF"}
+            {aksaraOnly ? "Aksara Only" : "Aksara Only"}
           </button>
         </div>
 
