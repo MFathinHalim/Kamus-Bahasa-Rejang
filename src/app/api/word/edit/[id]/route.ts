@@ -18,8 +18,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "ID, Indonesia, and Rejang fields are required." }, { status: 400 });
     }
 
-    // Extract Authorization header and check token
-    const headersList: any = headers();
+    // Await the headers
+    const headersList = await headers(); // Awaiting the headers() call
+
     const authHeader = headersList.get("authorization");
     const token = authHeader && authHeader.split(" ")[1]; // Extract token from Bearer token format
     
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Update the existing entry in the database by ID
-    const updatedPost = await dataInstance.edit(id, Indonesia, Rejang );
+    const updatedPost = await dataInstance.edit(id, Indonesia, Rejang);
 
     if (!updatedPost) {
       return NextResponse.json({ error: "Data not found or could not be updated." }, { status: 404 });

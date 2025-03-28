@@ -73,7 +73,7 @@ export default function Home() {
               className={`absolute left-0 w-1/2 h-full flex items-center justify-center font-semibold rounded-full transition-all duration-300 ${mode === "indonesia" ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"
                 }`}
             >
-              Indonesia
+              Auto
             </div>
             <div
               className={`absolute right-0 w-1/2 h-full flex items-center justify-center font-semibold rounded-full transition-all duration-300 ${mode === "rejang" ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"

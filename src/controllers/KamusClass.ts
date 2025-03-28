@@ -22,18 +22,35 @@ class KamusClass {
     if (!KamusClass.instance) KamusClass.instance = new KamusClass(); //bikin instance baru
     return KamusClass.instance;
   }
+  async translateWithGoogle(input: string, targetLang = "id") {
+    try {
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLang}&dt=t&q=${encodeURIComponent(
+          input
+        )}`
+      );
 
-  async translate(input: string, rejang: boolean = false) {
+      const result = await response.json();
+      return result[0][0][0]; // Mengambil teks hasil terjemahan
+    } catch (error) {
+      console.error("Translation failed:", error);
+      return "Terjemahan gagal.";
+    }
+  }
+  async translate(input: string | any, rejang: boolean = false) {
     let aksaraKaganga: string = "";
     let result: string = input;
 
-    // Split input into individual words
+    input = await this.translateWithGoogle(input); // Output: "Halo Dunia"
+
+    // Tambahkan spasi dan ganti "ku" dengan " saya"
+    input = input.replace(/ku\b/g, " saya");
     const words = input.toLowerCase().split(" ");
 
     if (rejang) {
       // Translate each Rejang word to Indonesia
       const translations = await Promise.all(
-        words.map(async (word) => {
+        words.map(async (word: string) => {
           const doc = await this.data.findOne({ Rejang: word });
           return doc ? doc.Indonesia : word; // Replace if found, otherwise keep the original word
         })
@@ -42,10 +59,10 @@ class KamusClass {
       aksaraKaganga = kaganga(result);
     } else {
       // Handle Indonesia to Rejang translation with "ê" normalization
-      const normalizedWords = words.map((word) => word.replace("ê", "e"));
+      const normalizedWords = words.map((word: string) => word.replace("ê", "e"));
 
       const translations = await Promise.all(
-        normalizedWords.map(async (word) => {
+        normalizedWords.map(async (word: string) => {
           const doc = await this.data.findOne({ Indonesia: word });
           return doc ? doc.Rejang.replace("ê", "e") : word; // Replace if found, else keep original
         })
@@ -146,14 +163,8 @@ class KamusClass {
       }
 
       // Cek apakah data ada di main `data` atau `ongoingdata`
-      const existingMainData = await this.data.findOne({ Indonesia, Rejang });
       const existingOngoingData = await this.ongoingdata.findById(id);
 
-      // Jika data sudah ada di main database
-      if (existingMainData) {
-        console.log("Data already exists in the main database.");
-        return 409; // Conflict
-      }
 
       // Jika ID ditemukan, edit data di ongoingdata
       if (existingOngoingData) {
