@@ -25,10 +25,10 @@ class KamusClass {
 
   async translate(input: string, rejang: boolean = false) {
     let aksaraKaganga: string = "";
-    let result: string = input.toLowerCase();
+    let result: string = input;
 
     // Split input into individual words
-    const words = input.split(" ");
+    const words = input.toLowerCase().split(" ");
 
     if (rejang) {
       // Translate each Rejang word to Indonesia
