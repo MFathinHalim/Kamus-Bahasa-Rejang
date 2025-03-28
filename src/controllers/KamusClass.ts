@@ -25,11 +25,11 @@ class KamusClass {
 
   async translate(input: string, rejang: boolean = false) {
     let aksaraKaganga: string = "";
-    let result: string = input;
-  
+    let result: string = input.toLowerCase();
+
     // Split input into individual words
     const words = input.split(" ");
-  
+
     if (rejang) {
       // Translate each Rejang word to Indonesia
       const translations = await Promise.all(
@@ -43,7 +43,7 @@ class KamusClass {
     } else {
       // Handle Indonesia to Rejang translation with "ê" normalization
       const normalizedWords = words.map((word) => word.replace("ê", "e"));
-  
+
       const translations = await Promise.all(
         normalizedWords.map(async (word) => {
           const doc = await this.data.findOne({ Indonesia: word });
@@ -52,15 +52,15 @@ class KamusClass {
       );
       result = translations.join(" "); // Reconstruct the translated sentence
     }
-  
+
     aksaraKaganga = kaganga(result);
-  
+
     return {
-      result: result,      // Final translated result (sentence)
+      result: result, // Final translated result (sentence)
       aksara: aksaraKaganga, // Result converted to aksara Kaganga
     };
   }
-  
+
   async postList(
     page: number = 1,
     limit: number = 10,
@@ -129,32 +129,32 @@ class KamusClass {
       const badWordsString: string | undefined = process.env.katakasar;
       if (!badWordsString)
         throw new Error("Bad words list is missing in environment variables.");
-  
+
       const badWords = badWordsString.split(",");
       Indonesia = Indonesia.toLowerCase().trim();
       Rejang = Rejang.toLowerCase().trim();
-  
+
       // Validate bad words
       const containsBadWord = badWords.some((word: string) => {
         const regex = new RegExp(`\\b${word}\\b`, "gi");
         return regex.test(Indonesia) || regex.test(Rejang);
       });
-  
+
       if (!Indonesia || !Rejang || containsBadWord) {
         console.log("Invalid input or bad word detected.");
         return 204; // No Content - Bad word or empty input
       }
-  
+
       // Cek apakah data ada di main `data` atau `ongoingdata`
       const existingMainData = await this.data.findOne({ Indonesia, Rejang });
       const existingOngoingData = await this.ongoingdata.findById(id);
-  
+
       // Jika data sudah ada di main database
       if (existingMainData) {
         console.log("Data already exists in the main database.");
         return 409; // Conflict
       }
-  
+
       // Jika ID ditemukan, edit data di ongoingdata
       if (existingOngoingData) {
         const updatedOngoing = await this.ongoingdata.findByIdAndUpdate(
@@ -165,12 +165,11 @@ class KamusClass {
         console.log("Ongoing data has been updated.");
         return updatedOngoing ? 200 : 404; // Return 200 jika sukses, 404 jika tidak ditemukan
       }
-  
+
       // Jika ID tidak ada, tambahkan sebagai data baru ke ongoingdata
       await this.ongoingdata.create({ _id: id, Indonesia, Rejang });
       console.log("New data has been added to ongoingdata.");
       return 201; // Created
-  
     } catch (err) {
       console.error(
         "An error occurred while editing or adding to ongoingdata:",
@@ -179,7 +178,7 @@ class KamusClass {
       return 500; // Internal Server Error
     }
   }
-  
+
   async accept(id: string) {
     try {
       // Find the entry in ongoingdata by its ID
@@ -188,10 +187,10 @@ class KamusClass {
         console.log("Entry not found in ongoingdata.");
         return 404; // Not Found
       }
-  
+
       // Check if the entry already exists in the main collection
       const existingEntry = await this.data.findById(id);
-  
+
       if (existingEntry) {
         // If the entry exists, update it
         await this.data.findByIdAndUpdate(existingEntry._id, {
@@ -207,18 +206,19 @@ class KamusClass {
         });
         console.log("New data has been added to the main collection.");
       }
-  
+
       // Remove the entry from ongoingdata
       await this.ongoingdata.findByIdAndDelete(id);
-      console.log("Data has been accepted and moved/dealt with in the main collection.");
-  
+      console.log(
+        "Data has been accepted and moved/dealt with in the main collection."
+      );
+
       return 200; // Success
-  
     } catch (err) {
       console.error("An error occurred while accepting data:", err);
       return 500; // Internal Server Error
     }
   }
-  }
+}
 
 export default KamusClass;
