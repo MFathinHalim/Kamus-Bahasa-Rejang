@@ -140,13 +140,10 @@ export default function DataListPage() {
               width={32}
               height={32}
             />
-            <span className="font-bold hidden md:block text-xl">Kamus Bahasa Rejang</span>
-          </a>
-          <a href="/list" className="text-lg text-gray-600 hover:underline">
-            Daftar Kata
+            <span className="font-bold hidden md:block text-xl">Rejang Dictionary</span>
           </a>
         </header>
-        <h1 className="text-2xl font-bold mb-6 text-center">Daftar Kata</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Word List</h1>
 
         <form onSubmit={handleAddData} className="mb-6 flex w-full gap-2">
           <input

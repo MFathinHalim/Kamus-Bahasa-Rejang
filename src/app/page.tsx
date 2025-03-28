@@ -55,16 +55,16 @@ export default function Home() {
               width={32}
               height={32}
             />
-            <span className="font-bold hidden md:block text-xl">Kamus Bahasa Rejang</span>
+            <span className="font-bold hidden md:block text-xl">Rejang Dictionary</span>
           </a>
           <a href="/list" className="text-lg text-gray-600 hover:underline">
-            Daftar Kata
+            Word List
           </a>
         </header>
 
-        <h2 className="text-2xl font-semibold mt-4">Terjemahkan dari Bahasa</h2>
+        <h2 className="text-2xl font-semibold mt-4">Translate from</h2>
 
-        <div className="flex items-center justify-between mb-6 mt-2 gap-2">
+        <div className="flex items-center justify-between mb-4 mt-2 gap-2">
           <div
             className="relative flex items-center w-50 h-8 bg-gray-300 rounded-full cursor-pointer"
             onClick={toggleMode}
@@ -95,7 +95,7 @@ export default function Home() {
         <textarea
           value={inputWord}
           onChange={(e) => setInputWord(e.target.value)}
-          placeholder="Tulis kata/kalimat yang ingin diterjemahkan"
+          placeholder="Write here"
           className="w-full p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-1 resize-none h-32 bg-gray-200"
         />
 
@@ -103,12 +103,12 @@ export default function Home() {
           onClick={handleFetch}
           className="w-full bg-red-400 hover:bg-red-500 text-white py-3 rounded-full text-xl font-semibold cursor-pointer"
         >
-          Terjemahkan
+          Translate
         </button>
         {result && (
           <div className="mt-6">
             <h6 className="text-2xl font-semibold mb-2 transition-opacity duration-300">
-              Hasil
+              Result
             </h6>
             <div
               className={`p-4 rounded-lg bg-gray-200 text-gray-700 text-xl overflow-hidden`}
