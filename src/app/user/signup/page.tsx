@@ -138,9 +138,9 @@ export default function SignUp() {
         </form>
 
         <p className="mt-4 text-center text-gray-600">
-          Sudah punya akun?{" "}
+          Already have an account?{" "}
           <Link href="/login" className="text-red-500 font-semibold hover:underline">
-            Login di sini
+            Login
           </Link>
         </p>
       </div>

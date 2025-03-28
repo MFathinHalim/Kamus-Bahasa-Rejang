@@ -138,9 +138,9 @@ export default function Login() {
         </form>
 
         <p className="mt-4 text-center text-gray-600">
-          Belum punya akun?{" "}
+          Dont have account?{" "}
           <Link href="/user/signup" className="text-red-500 font-semibold hover:underline">
-            Daftar di sini
+            Sign Up
           </Link>
         </p>
       </div>
