@@ -25,7 +25,7 @@ class KamusClass {
   async translateWithGoogle(input: string, targetLang = "id") {
     try {
       const response = await fetch(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLang}&dt=t&q=${encodeURIComponent(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(
           input
         )}`
       );
