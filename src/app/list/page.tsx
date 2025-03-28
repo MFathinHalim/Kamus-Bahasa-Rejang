@@ -101,7 +101,6 @@ export default function DataListPage() {
       });
       if (response.ok) {
         const newData = await response.json();
-        setDatas([newData.post, ...Datas]);
         setNewIndonesia("");
         setNewRejang("");
       }
@@ -132,7 +131,7 @@ export default function DataListPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
-      <main className="w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
+      <main className="w-full max-w-lg rounded-lg">
         <header className="w-full flex justify-between items-center pb-6">
           <a href="/" className="flex items-center gap-2 bg-gray-200 p-2 px-3 rounded-lg">
             <img
@@ -147,7 +146,7 @@ export default function DataListPage() {
             Daftar Kata
           </a>
         </header>
-        <h1 className="text-2xl font-bold mb-6 text-center">DAFTAR KATA</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Daftar Kata</h1>
 
         <form onSubmit={handleAddData} className="mb-6 flex w-full gap-2">
           <input
@@ -164,34 +163,34 @@ export default function DataListPage() {
             onChange={(e) => setNewRejang(e.target.value)}
             className="p-2 bg-gray-100 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <button type="submit" className="p-2 bg-red-400 text-white rounded-lg shadow-md hover:bg-blue-600">
-            Add
-          </button>
+          {user ? (
+            <button type="submit" className="p-2 bg-red-400 text-white rounded-lg shadow-md hover:bg-red-500">
+              Add
+            </button>
+          ) : (
+            <a href="/user/login" className="p-2 bg-red-400 text-white rounded-lg shadow-md hover:bg-blue-500">
+              Login
+            </a>
+          )}
         </form>
 
-        <div className="grid grid-cols-2 gap-4 text-center mb-4">
-          <span className="font-semibold text-lg">Indonesia</span>
-          <span className="font-semibold text-lg">Rejang</span>
-        </div>
-
-        {Datas.map((Data: any, index) => (
+        {Datas.map((Data, index) => (
           <div
             className="grid grid-cols-2 gap-4 py-4 mt-2 text-center rounded-lg bg-gray-100 shadow-md hover:shadow-lg cursor-pointer"
             key={index}
-            onClick={() => setEditData(Data)}
+            onClick={() => user && setEditData(Data)}
           >
             <div>{Data.Indonesia}</div>
             <div>{Data.Rejang}</div>
           </div>
         ))}
-
         {loading && <p className="mt-4 text-center">Loading more data...</p>}
         {hasMore && <div ref={bottomRef} className="h-10 w-full" />}
 
-        {editData && (
-          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center">
+        {user && editData && (
+          <div className="fixed top-0 left-0 w-full h-full bg-black/20 backdrop-blur-sm flex justify-center items-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <h2 className="text-xl font-bold mb-4">Edit Data</h2>
+              <h2 className="text-xl font-bold mb-4">Edit Kata</h2>
               <input
                 type="text"
                 value={editData.Indonesia}
@@ -207,13 +206,13 @@ export default function DataListPage() {
               <div className="flex justify-end gap-2">
                 <button
                   onClick={handleEditData}
-                  className="p-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600"
+                  className="p-2 bg-green-400 text-white rounded-full px-5 shadow-md hover:bg-green-500"
                 >
                   Save
                 </button>
                 <button
                   onClick={() => setEditData(null)}
-                  className="p-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600"
+                  className="p-2 bg-red-400 text-white rounded-full px-5 shadow-md hover:bg-red-500"
                 >
                   Cancel
                 </button>
