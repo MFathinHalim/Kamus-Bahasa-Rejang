@@ -1,37 +1,30 @@
-"use client"
+"use client";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 
-interface Word {
-  id: string;
-  indonesia: string;
-  rejang: string;
-}
-
-export default function WordListPage() {
-  const [words, setWords] = useState<Word[]>([]);
+export default function DataListPage() {
+  const [Datas, setDatas] = useState<Data[]>([]);
   const [page, setPage] = useState<number>(1);
-  const limit = 5; // Menampilkan 5 kata per halaman
+  const limit = 5;
   const [loading, setLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [token, setToken] = useState<string>("");
   const [user, setUser] = useState<any>(null);
-  const [editWord, setEditWord] = useState<Word | null>(null);
+  const [editData, setEditData] = useState<Data | null>(null);
   const [newIndonesia, setNewIndonesia] = useState<string>("");
   const [newRejang, setNewRejang] = useState<string>("");
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const fetchWords = async (newPage: number) => {
+  const fetchDatas = async (newPage: number) => {
     try {
       setLoading(true);
       const response = await axios.get(`/api/word/list?page=${newPage}&limit=${limit}`);
-      const newWords: Word[] = response.data.posts;
-
-      setWords((prevWords) => [...prevWords, ...newWords]);
-      setHasMore(newWords.length > 0);
+      const newDatas: Data[] = response.data.posts;
+      setDatas((prevDatas) => [...prevDatas, ...newDatas]);
+      setHasMore(newDatas.length > 0);
       setLoading(false);
     } catch (error) {
-      console.error("Failed to fetch word list:", error);
+      console.error("Failed to fetch Data list:", error);
       setLoading(false);
     }
   };
@@ -41,16 +34,12 @@ export default function WordListPage() {
       if (sessionStorage.getItem("token")) {
         return sessionStorage.getItem("token");
       }
-
       const response = await fetch("/api/user/session/token/refresh", {
         method: "POST",
         credentials: "include",
       });
-
-      if (!response.ok) return (window.location.href = "/");
-
+      if (!response.ok) return;
       const data = await response.json();
-      if (!data.token) return (window.location.href = "/");
       sessionStorage.setItem("token", data.token);
       return data.token;
     } catch (error) {
@@ -65,14 +54,11 @@ export default function WordListPage() {
         const tokenTemp = await refreshAccessToken();
         if (!tokenTemp) return;
         setToken(tokenTemp);
-
         const response = await fetch(`/api/user/session/token/check`, {
           method: "POST",
           headers: { Authorization: `Bearer ${tokenTemp}` },
         });
-
-        if (!response.ok) window.location.href = "/user/login";
-
+        if (!response.ok) return;
         const check = await response.json();
         setUser(check);
       } catch (error) {
@@ -80,28 +66,24 @@ export default function WordListPage() {
         setUser(null);
       }
     }
-
     if (user === null) fetchUserData();
   }, [user]);
 
   useEffect(() => {
-    fetchWords(page);
+    fetchDatas(page);
   }, [page]);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (observer.current) observer.current.disconnect();
-
     observer.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore) {
         setPage((prevPage) => prevPage + 1);
       }
     });
-
     if (bottomRef.current) {
       observer.current.observe(bottomRef.current);
     }
-
     return () => {
       if (observer.current && bottomRef.current) {
         observer.current.unobserve(bottomRef.current);
@@ -109,7 +91,7 @@ export default function WordListPage() {
     };
   }, [hasMore]);
 
-  const handleAddWord = async (e: React.FormEvent) => {
+  const handleAddData = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await fetch("/api/word/add", {
@@ -117,110 +99,129 @@ export default function WordListPage() {
         headers: { Authorization: `Bearer ${token}` },
         body: new URLSearchParams({ Indonesia: newIndonesia, Rejang: newRejang }),
       });
-
       if (response.ok) {
-        const newWord = await response.json();
-        setWords([newWord.post, ...words]);
+        const newData = await response.json();
+        setDatas([newData.post, ...Datas]);
         setNewIndonesia("");
         setNewRejang("");
       }
     } catch (error) {
-      console.error("Failed to add word:", error);
+      console.error("Failed to add Data:", error);
     }
   };
 
-  const handleEditWord = async () => {
-    if (!editWord) return;
-
+  const handleEditData = async () => {
+    if (!editData) return;
     try {
-      const response = await fetch(`/api/word/edit/${editWord.id}`, {
+      const response = await fetch(`/api/word/edit/${editData._id}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-        body: new URLSearchParams({ Indonesia: editWord.indonesia, Rejang: editWord.rejang }),
+        body: new URLSearchParams({ Indonesia: editData.Indonesia, Rejang: editData.Rejang }),
       });
-
       if (response.ok) {
-        const updatedWord = await response.json();
-        setWords((prevWords) =>
-          prevWords.map((word) => (word.id === updatedWord.id ? updatedWord : word))
+        const updatedData = await response.json();
+        setDatas((prevDatas) =>
+          prevDatas.map((Data) => (Data._id === updatedData._id ? updatedData : Data))
         );
-        setEditWord(null);
+        setEditData(null);
       }
     } catch (error) {
-      console.error("Failed to edit word:", error);
+      console.error("Failed to edit Data:", error);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10">
-      <h1 className="text-3xl font-bold mb-6">DAFTAR KATA</h1>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
+      <main className="w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
+        <header className="w-full flex justify-between items-center pb-6">
+          <a href="/" className="flex items-center gap-2 bg-gray-200 p-2 px-3 rounded-lg">
+            <img
+              src="https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665"
+              alt="Logo"
+              width={32}
+              height={32}
+            />
+            <span className="font-bold hidden md:block text-xl">Kamus Bahasa Rejang</span>
+          </a>
+          <a href="/list" className="text-lg text-gray-600 hover:underline">
+            Daftar Kata
+          </a>
+        </header>
+        <h1 className="text-2xl font-bold mb-6 text-center">DAFTAR KATA</h1>
 
-      <form onSubmit={handleAddWord} className="mb-4">
-        <input
-          type="text"
-          placeholder="Indonesia"
-          value={newIndonesia}
-          onChange={(e) => setNewIndonesia(e.target.value)}
-          className="p-2 border rounded mr-2"
-        />
-        <input
-          type="text"
-          placeholder="Rejang"
-          value={newRejang}
-          onChange={(e) => setNewRejang(e.target.value)}
-          className="p-2 border rounded mr-2"
-        />
-        <button type="submit" className="p-2 bg-blue-500 text-white rounded">
-          Add
-        </button>
-      </form>
+        <form onSubmit={handleAddData} className="mb-6 flex w-full gap-2">
+          <input
+            type="text"
+            placeholder="Indonesia"
+            value={newIndonesia}
+            onChange={(e) => setNewIndonesia(e.target.value)}
+            className="p-2 bg-gray-100 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="text"
+            placeholder="Rejang"
+            value={newRejang}
+            onChange={(e) => setNewRejang(e.target.value)}
+            className="p-2 bg-gray-100 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button type="submit" className="p-2 bg-red-400 text-white rounded-lg shadow-md hover:bg-blue-600">
+            Add
+          </button>
+        </form>
 
-      <div className="grid grid-cols-2 gap-4 text-center w-full max-w-lg">
-        <span className="font-bold">Indonesia</span>
-        <span className="font-bold">Rejang</span>
+        <div className="grid grid-cols-2 gap-4 text-center mb-4">
+          <span className="font-semibold text-lg">Indonesia</span>
+          <span className="font-semibold text-lg">Rejang</span>
+        </div>
 
-        {words.map((word, index) => (
-          <div key={index} onClick={() => setEditWord(word)}>
-            <div className="bg-gray-200 rounded-lg p-4">{word.indonesia}</div>
-            <div className="bg-gray-200 rounded-lg p-4">{word.rejang}</div>
+        {Datas.map((Data: any, index) => (
+          <div
+            className="grid grid-cols-2 gap-4 py-4 mt-2 text-center rounded-lg bg-gray-100 shadow-md hover:shadow-lg cursor-pointer"
+            key={index}
+            onClick={() => setEditData(Data)}
+          >
+            <div>{Data.Indonesia}</div>
+            <div>{Data.Rejang}</div>
           </div>
         ))}
-      </div>
 
-      {loading && <p className="mt-4">Loading more words...</p>}
-      {hasMore && <div ref={bottomRef} className="h-10 w-full" />}
+        {loading && <p className="mt-4 text-center">Loading more data...</p>}
+        {hasMore && <div ref={bottomRef} className="h-10 w-full" />}
 
-      {editWord && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Edit Word</h2>
-            <input
-              type="text"
-              value={editWord.indonesia}
-              onChange={(e) => setEditWord({ ...editWord, indonesia: e.target.value })}
-              className="p-2 border rounded w-full mb-2"
-            />
-            <input
-              type="text"
-              value={editWord.rejang}
-              onChange={(e) => setEditWord({ ...editWord, rejang: e.target.value })}
-              className="p-2 border rounded w-full mb-4"
-            />
-            <button
-              onClick={handleEditWord}
-              className="p-2 bg-green-500 text-white rounded mr-2"
-            >
-              Save
-            </button>
-            <button
-              onClick={() => setEditWord(null)}
-              className="p-2 bg-red-500 text-white rounded"
-            >
-              Cancel
-            </button>
+        {editData && (
+          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+              <h2 className="text-xl font-bold mb-4">Edit Data</h2>
+              <input
+                type="text"
+                value={editData.Indonesia}
+                onChange={(e) => setEditData({ ...editData, Indonesia: e.target.value })}
+                className="p-2 border rounded-lg w-full mb-2 focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                value={editData.Rejang}
+                onChange={(e) => setEditData({ ...editData, Rejang: e.target.value })}
+                className="p-2 border rounded-lg w-full mb-4 focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={handleEditData}
+                  className="p-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setEditData(null)}
+                  className="p-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }

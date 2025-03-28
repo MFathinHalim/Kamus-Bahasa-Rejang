@@ -1,4 +1,5 @@
 type Data = {
+    _id: any,
     Indonesia: string,
     Rejang: string
 }
