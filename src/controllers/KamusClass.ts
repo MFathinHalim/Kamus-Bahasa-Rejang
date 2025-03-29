@@ -59,7 +59,9 @@ class KamusClass {
       aksaraKaganga = kaganga(result);
     } else {
       // Handle Indonesia to Rejang translation with "ê" normalization
-      const normalizedWords = words.map((word: string) => word.replace("ê", "e"));
+      const normalizedWords = words.map((word: string) =>
+        word.replace("ê", "e")
+      );
 
       const translations = await Promise.all(
         normalizedWords.map(async (word: string) => {
@@ -122,16 +124,8 @@ class KamusClass {
       });
 
       if (Indonesia.trim() !== "" && Rejang.trim() !== "" && !containsBadWord) {
-        // TODO: Tambahkan posting ke database terlebih dahulu.
-        const existingDataIndo = await this.data.findOne({ Indonesia });
-        const existingDataRejang = await this.data.findOne({ Rejang });
-
-        if (!existingDataIndo && !existingDataRejang) {
-          // Data belum ada dalam database, tambahkan ke database
-          await this.ongoingdata.create({ Indonesia, Rejang });
-        } else {
-          console.log("Data already exists in the database.");
-        }
+        // Data belum ada dalam database, tambahkan ke database
+        await this.ongoingdata.create({ Indonesia, Rejang });
       } else {
         return 204;
       }
@@ -164,7 +158,6 @@ class KamusClass {
 
       // Cek apakah data ada di main `data` atau `ongoingdata`
       const existingOngoingData = await this.ongoingdata.findById(id);
-
 
       // Jika ID ditemukan, edit data di ongoingdata
       if (existingOngoingData) {
