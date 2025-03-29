@@ -22,10 +22,10 @@ class KamusClass {
     if (!KamusClass.instance) KamusClass.instance = new KamusClass(); //bikin instance baru
     return KamusClass.instance;
   }
-  async translateWithGoogle(input: string, targetLang = "id") {
+  async translateWithGoogle(input: string, langUser: string, targetLang = "id") {
     try {
       const response = await fetch(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${langUser}&tl=${targetLang}&dt=t&q=${encodeURIComponent(
           input
         )}`
       );
@@ -37,11 +37,11 @@ class KamusClass {
       return "Terjemahan gagal.";
     }
   }
-  async translate(input: string | any, rejang: boolean = false) {
+  async translate(input: string | any, rejang: boolean = false, lang: string = "id") {
     let aksaraKaganga: string = "";
     let result: string = input;
 
-    input = await this.translateWithGoogle(input); // Output: "Halo Dunia"
+    if(!rejang) input = await this.translateWithGoogle(input, lang); // Output: "Halo Dunia"
 
     // Tambahkan spasi dan ganti "ku" dengan " saya"
     input = input.replace(/ku\b/g, " saya");
@@ -56,6 +56,7 @@ class KamusClass {
         })
       );
       result = translations.join(" "); // Reconstruct the translated sentence
+      result = await this.translateWithGoogle(result, "id", lang);
       aksaraKaganga = kaganga(result);
     } else {
       // Handle Indonesia to Rejang translation with "ê" normalization
