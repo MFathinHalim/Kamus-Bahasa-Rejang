@@ -12,7 +12,7 @@ const languages = [
 
 export default function Home() {
   const [inputWord, setInputWord] = useState("");
-  const [selectedLang, setSelectedLang] = useState("id");
+  const [selectedLang, setSelectedLang] = useState("auto");
   const [mode, setMode] = useState("auto");
   const [result, setResult] = useState("");
   const [aksaraOnly, setAksaraOnly] = useState(false);
@@ -20,7 +20,7 @@ export default function Home() {
 
   const handleFetch = async () => {
     try {
-      const langMode = mode === "auto" ? selectedLang : mode; 
+      const langMode = mode === "auto" ? selectedLang : mode;
       const endpoint = aksaraOnly
         ? `/api/word/kaganga?word=${encodeURIComponent(inputWord)}`
         : `/api/word/translate/${langMode}?word=${encodeURIComponent(inputWord)}&lang=${selectedLang}`;
@@ -42,6 +42,9 @@ export default function Home() {
   };
 
   const toggleMode = () => {
+    if(mode !== "rejang" && selectedLang === 'auto') {
+      setSelectedLang("id")
+    }
     setMode((prevMode) => (prevMode === "rejang" ? "auto" : "rejang"));
   };
 
@@ -95,20 +98,27 @@ export default function Home() {
               </select>
             ) : (
               // Tombol Auto saat mode bukan rejang
-              <button
-                className="bg-red-400 text-white h-8 px-3 rounded-full font-semibold text-center"
-                disabled
+              <select
+                value={selectedLang}
+                onChange={handleSelectChange}
+                className="bg-red-400 h-8 px-3 rounded-full font-semibold text-center"
               >
-                Auto
-              </button>
+                <option key="auto" value="auto">
+                  Auto
+                </option>
+                {languages.map((lang) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
             )}
 
             {/* Toggle Mode */}
             <div
               onClick={toggleMode}
-              className={`px-6 h-8 rounded-full font-semibold text-center flex items-center justify-center cursor-pointer ${
-                mode === "rejang" ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"
-              }`}
+              className={`px-6 h-8 rounded-full font-semibold text-center flex items-center justify-center cursor-pointer ${mode === "rejang" ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"
+                }`}
             >
               Rejang
             </div>
@@ -116,9 +126,8 @@ export default function Home() {
 
           <button
             onClick={toggleAksaraOnly}
-            className={`cursor-pointer ${
-              aksaraOnly ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"
-            } font-semibold py-2 px-4 rounded-lg`}
+            className={`cursor-pointer ${aksaraOnly ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"
+              } font-semibold py-2 px-4 rounded-lg`}
           >
             Aksara
           </button>
