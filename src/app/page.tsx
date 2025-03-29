@@ -101,13 +101,13 @@ export default function Home() {
               <select
                 value={selectedLang}
                 onChange={handleSelectChange}
-                className="bg-red-400 h-8 px-3 rounded-full font-semibold text-center"
-              >
-                <option key="auto" value="auto">
+                className="bg-red-400 text-white h-8 px-2 rounded-full font-semibold text-center"
+                >
+                <option key="auto"className="bg-gray-300 border-none border-transparent text-black" value="auto">
                   Auto
                 </option>
                 {languages.map((lang) => (
-                  <option key={lang.code} value={lang.code}>
+                  <option className="bg-gray-300 border-none border-transparent text-black" key={lang.code} value={lang.code}>
                     {lang.name}
                   </option>
                 ))}

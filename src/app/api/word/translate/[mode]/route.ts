@@ -8,7 +8,6 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;    // Access query parameters on the server
   
     const rejang = param === "rejang"
-    console.log(param)
     const prompt = searchParams.get("word") || "";
     const lang = searchParams.get("lang") || "";
     const data = await dataInstance.translate(prompt, rejang, lang)

@@ -40,9 +40,7 @@ class KamusClass {
   async translate(input: string | any, rejang: boolean = false, lang: string = "id") {
     let aksaraKaganga: string = "";
     let result: string = input;
-
-    if(!rejang) input = await this.translateWithGoogle(input, lang); // Output: "Halo Dunia"
-
+    if(!rejang) input = await this.translateWithGoogle(input, lang, "id"); // Output: "Halo Dunia"
     // Tambahkan spasi dan ganti "ku" dengan " saya"
     input = input.replace(/ku\b/g, " saya");
     const words = input.toLowerCase().split(" ");
