@@ -124,7 +124,10 @@ class KamusClass {
 
       if (Indonesia.trim() !== "" && Rejang.trim() !== "" && !containsBadWord) {
         // Data belum ada dalam database, tambahkan ke database
+        await this.sendDiscordNotification("Kata Baru Ditambahkan", Indonesia, Rejang);
         await this.ongoingdata.create({ Indonesia, Rejang });
+
+        console.log("hello")
       } else {
         return 204;
       }
@@ -165,13 +168,12 @@ class KamusClass {
           { Indonesia, Rejang },
           { new: true } // Mengembalikan dokumen yang diperbarui
         );
-        console.log("Ongoing data has been updated.");
         return updatedOngoing ? 200 : 404; // Return 200 jika sukses, 404 jika tidak ditemukan
       }
 
       // Jika ID tidak ada, tambahkan sebagai data baru ke ongoingdata
       await this.ongoingdata.create({ _id: id, Indonesia, Rejang });
-      console.log("New data has been added to ongoingdata.");
+      await this.sendDiscordNotification("Kata Diedit", Indonesia, Rejang);
       return 201; // Created
     } catch (err) {
       console.error(
@@ -220,6 +222,32 @@ class KamusClass {
     } catch (err) {
       console.error("An error occurred while accepting data:", err);
       return 500; // Internal Server Error
+    }
+  }
+  async sendDiscordNotification(action: string, indonesia: string, rejang: string) {
+    const webhookUrl = process.env.DISCORD_WEBHOOK_URL; // Simpan di .env
+    const roleId = "1355742433727615276"; // Ganti dengan ID role yang ingin di-mention
+  
+    if (!webhookUrl) {
+      console.error("Webhook URL tidak ditemukan.");
+      return;
+    }
+  
+    const content = `📢 <@&${roleId}> **${action}**  
+──────────  
+🌍 **Indonesia:** ${indonesia}  
+──────────  
+📝 **Rejang:** ${rejang}  
+──────────  
+✨ Terima kasih telah berkontribusi!`;  
+    try {
+      await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+    } catch (err) {
+      console.error("Gagal mengirim notifikasi ke Discord:", err);
     }
   }
 }

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@discordjs/next": "^0.1.1-dev.1673526225-a580768.0",
     "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.4.7",
