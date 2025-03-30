@@ -14,9 +14,9 @@ export default function Home() {
   const [inputWord, setInputWord] = useState("");
   const [selectedLang, setSelectedLang] = useState("auto");
   const [mode, setMode] = useState("auto");
-  const [result, setResult] = useState("");
+  const [result, setResult] = useState("Hasil muncul disini");
   const [aksaraOnly, setAksaraOnly] = useState(false);
-  const [aksara, setAksara] = useState("");
+  const [aksara, setAksara] = useState("kgf");
 
   const handleFetch = async () => {
     try {
@@ -42,7 +42,7 @@ export default function Home() {
   };
 
   const toggleMode = () => {
-    if(mode !== "rejang" && selectedLang === 'auto') {
+    if (mode !== "rejang" && selectedLang === 'auto') {
       setSelectedLang("id")
     }
     setMode((prevMode) => (prevMode === "rejang" ? "auto" : "rejang"));
@@ -102,8 +102,8 @@ export default function Home() {
                 value={selectedLang}
                 onChange={handleSelectChange}
                 className="bg-red-400 text-white h-8 px-2 rounded-full font-semibold text-center"
-                >
-                <option key="auto"className="bg-gray-300 border-none border-transparent text-black" value="auto">
+              >
+                <option key="auto" className="bg-gray-300 border-none border-transparent text-black" value="auto">
                   Auto
                 </option>
                 {languages.map((lang) => (
@@ -147,14 +147,18 @@ export default function Home() {
           Translate
         </button>
 
-        {result && (
-          <div className="mt-6">
-            <h6 className="text-2xl font-semibold mb-2">Result</h6>
-            <div className="p-4 rounded-lg bg-gray-200 text-gray-700 text-xl">{result}</div>
+        <div className="mt-6 mb-3">
+          <h6 className="text-2xl font-semibold mb-2">Result</h6>
+          <div className="p-4 rounded-lg bg-gray-200 text-gray-700 text-xl">{result}<br /><span className="rejang">{aksara}</span>
           </div>
-        )}
+        </div>
 
         <footer className="mt-auto text-lg text-gray-500 py-4 w-full">© 2025, Fathin</footer>
+        <div className="w-full bg-indigo-400 hover:bg-indigo-500 cursor-pointer text-white text-center py-3 rounded-lg mb-4">
+          <a href="https://discord.gg/HtxQZh7w6B" target="_blank" rel="noopener noreferrer" className="text-lg font-semibold">
+            🎉 Join Our Discord Server!
+          </a>
+        </div>
       </main>
     </div>
   );
