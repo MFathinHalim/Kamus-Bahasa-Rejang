@@ -59,6 +59,8 @@ export default function RootLayout({
       <body>
         {children}
       </body>
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2998592050723815"
+     crossOrigin="anonymous"></script>
     </html>
   );
 }
