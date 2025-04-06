@@ -135,16 +135,16 @@ class Users {
         }
     }
 
-    createRefreshToken(refresh: string): any {
-        return jwt.verify(refresh, process.env.JWT_SECRET_KEY || "", async (err: any, user: any) => {
-            if (err) return "error";
-            console.log(user)
-            const createAccessTokenn = await this.createAccessToken(user.id);
-            const accessToken: string = createAccessTokenn.newToken;
-
-            return accessToken;
-        });
-    }
+    async createRefreshToken(refresh: string): Promise<string | "error"> {
+        try {
+          const user: any = jwt.verify(refresh, process.env.JWT_SECRET_KEY || "");
+          const createAccessTokenn = await this.createAccessToken(user.id);
+          return createAccessTokenn.newToken;
+        } catch (err) {
+          console.error("JWT verify error:", err);
+          return "error";
+        }
+      }
 
     checkAccessToken(token: string) {
 

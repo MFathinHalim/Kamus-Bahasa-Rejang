@@ -65,7 +65,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col items-center p-6">
       <main className="w-full max-w-lg">
         <header className="w-full flex justify-between items-center pb-6">
-          <a href="/" className="flex items-center gap-2 bg-gray-200 p-2 px-3 rounded-lg">
+          <a href="/" className="flex items-center gap-2 bg-gray-100 p-2 px-3 rounded-lg">
             <img
               src="https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665"
               alt="Logo"
@@ -88,7 +88,7 @@ export default function Home() {
               <select
                 value={selectedLang}
                 onChange={handleSelectChange}
-                className="bg-gray-300 h-8 px-3 rounded-full font-semibold text-center"
+                className="bg-gray-200 shadow-sm h-8 px-3 rounded-full font-semibold text-center"
               >
                 {languages.map((lang) => (
                   <option key={lang.code} value={lang.code}>
@@ -101,13 +101,13 @@ export default function Home() {
               <select
                 value={selectedLang}
                 onChange={handleSelectChange}
-                className="bg-red-400 text-white h-8 px-2 rounded-full font-semibold text-center"
+                className="bg-red-400 border-none text-white h-8 px-2 rounded-full font-semibold text-center"
               >
-                <option key="auto" className="bg-gray-300 border-none border-transparent text-black" value="auto">
+                <option key="auto" className="bg-gray-100 border-none border-transparent text-black" value="auto">
                   Auto
                 </option>
                 {languages.map((lang) => (
-                  <option className="bg-gray-300 border-none border-transparent text-black" key={lang.code} value={lang.code}>
+                  <option className="bg-gray-100 border-none border-none text-black" key={lang.code} value={lang.code}>
                     {lang.name}
                   </option>
                 ))}
@@ -117,7 +117,7 @@ export default function Home() {
             {/* Toggle Mode */}
             <div
               onClick={toggleMode}
-              className={`px-6 h-8 rounded-full font-semibold text-center flex items-center justify-center cursor-pointer ${mode === "rejang" ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"
+              className={`px-6 h-8 rounded-full font-semibold text-center flex items-center justify-center cursor-pointer ${mode === "rejang" ? "bg-red-400 text-white" : "bg-gray-200 shadow-sm text-gray-700"
                 }`}
             >
               Rejang
@@ -126,7 +126,7 @@ export default function Home() {
 
           <button
             onClick={toggleAksaraOnly}
-            className={`cursor-pointer ${aksaraOnly ? "bg-red-400 text-white" : "bg-gray-300 text-gray-700"
+            className={`cursor-pointer ${aksaraOnly ? "bg-red-400 text-white" : "bg-gray-200 text-gray-700"
               } font-semibold py-2 px-4 rounded-lg`}
           >
             Aksara
@@ -137,7 +137,7 @@ export default function Home() {
           value={inputWord}
           onChange={(e) => setInputWord(e.target.value)}
           placeholder="Write here"
-          className="w-full p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-1 resize-none h-32 bg-gray-200"
+          className="w-full p-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 shadow-sm focus:ring-blue-500 mb-1 resize-none h-32 bg-gray-100"
         />
 
         <button
@@ -149,7 +149,7 @@ export default function Home() {
 
         <div className="mt-6 mb-3">
           <h6 className="text-2xl font-semibold mb-2">Result</h6>
-          <div className="p-4 rounded-lg bg-gray-200 text-gray-700 text-xl">{result}<br /><span className="rejang">{aksara}</span>
+          <div className="p-4 rounded-lg bg-gray-100 border border-gray-200 text-gray-700 text-xl shadow-sm">{result}<br /><span className="rejang">{aksara}</span>
           </div>
         </div>
 

@@ -20,16 +20,16 @@ export default function AdminPage() {
         credentials: "include",
       });
 
-      if (!response.ok) return router.push("/");
+      //if (!response.ok) return router.push("/");
 
       const data = await response.json();
-      if (!data.token) return router.push("/");
+      //if (!data.token) return router.push("/");
 
       setToken(data.token);
       fetchWordList(data.token, 1); // Fetch awal dengan halaman 1
     } catch (error) {
       console.error("Error refreshing access token:", error);
-      router.push("/");
+      //router.push("/");
     }
   };
 

@@ -151,14 +151,14 @@ export default function DataListPage() {
             placeholder="Indonesia"
             value={newIndonesia}
             onChange={(e) => setNewIndonesia(e.target.value)}
-            className="p-2 bg-gray-100 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="shadow-sm hover:shadow-md p-2 bg-gray-100 border border-gray-200 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="text"
             placeholder="Rejang"
             value={newRejang}
             onChange={(e) => setNewRejang(e.target.value)}
-            className="p-2 bg-gray-100 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-2 bg-gray-100 shadow-sm hover:shadow-md border border-gray-200 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           {user ? (
             <button type="submit" className="p-2 bg-red-400 text-white rounded-lg shadow-md hover:bg-red-500">
@@ -173,7 +173,7 @@ export default function DataListPage() {
 
         {Datas.map((Data, index) => (
           <div
-            className="grid grid-cols-2 gap-4 py-4 mt-2 text-center rounded-lg bg-gray-100 shadow-md hover:shadow-lg cursor-pointer"
+            className="grid grid-cols-2 gap-4 py-4 mt-2 text-center rounded-lg bg-gray-100 shadow-sm hover:shadow-md cursor-pointer"
             key={index}
             onClick={() => user && setEditData(Data)}
           >
