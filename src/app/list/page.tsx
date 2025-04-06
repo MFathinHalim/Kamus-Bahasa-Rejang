@@ -133,7 +133,7 @@ export default function DataListPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
       <main className="w-full max-w-lg rounded-lg">
         <header className="w-full flex justify-between items-center pb-6">
-          <a href="/" className="flex items-center gap-2 bg-gray-200 p-2 px-3 rounded-lg">
+          <a href="/" className="flex items-center gap-2 bg-gray-100 p-2 px-3 rounded-lg">
             <img
               src="https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665"
               alt="Logo"

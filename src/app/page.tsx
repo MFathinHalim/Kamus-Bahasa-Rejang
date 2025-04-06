@@ -50,7 +50,7 @@ export default function Home() {
 
   const toggleAksaraOnly = () => {
     setAksaraOnly((prev) => !prev);
-    setResult(inputWord);
+    setResult(inputWord || "Hasil Muncul Disini");
   };
 
   useEffect(() => {
