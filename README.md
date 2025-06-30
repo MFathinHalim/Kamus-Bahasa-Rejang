@@ -2,7 +2,7 @@
 
 **Kamus Bahasa Rejang** adalah aplikasi web modern berbasis Next.js yang memudahkan pengguna untuk menerjemahkan kata-kata dari Bahasa Rejang ke Bahasa Indonesia dan sebaliknya. Proyek ini dibuat untuk mendukung pelestarian budaya dan bahasa daerah di Indonesia, khususnya Bahasa Rejang dari Provinsi Bengkulu.
 
-![Logo](https://raw.githubusercontent.com/MFathinHalim/Kamus-Bahasa-Rejang/main/public/a.png) <!-- ganti kalau punya gambar preview -->
+![Logo](https://raw.githubusercontent.com/MFathinHalim/Kamus-Bahasa-Rejang/main/public/logo.png) <!-- ganti kalau punya gambar preview -->
 
 ## ✨ Fitur Unggulan
 
