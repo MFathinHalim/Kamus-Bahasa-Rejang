@@ -9,7 +9,6 @@
 - 🔍 Pencarian kosakata Rejang ↔ Indonesia
 - 📚 Daftar kata lengkap dan mudah diakses
 - 🎨 UI bersih & responsif, nyaman untuk semua perangkat
-- 🌙 Dark Mode bawaan (kalau ada)
 - 🔧 Backend & frontend dalam satu project (Next.js fullstack)
 
 ## 🛠 Tech Stack
