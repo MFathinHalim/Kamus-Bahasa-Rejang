@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🔤 Kamus Bahasa Rejang
 
-## Getting Started
+**Kamus Bahasa Rejang** adalah aplikasi web modern berbasis Next.js yang memudahkan pengguna untuk menerjemahkan kata-kata dari Bahasa Rejang ke Bahasa Indonesia dan sebaliknya. Proyek ini dibuat untuk mendukung pelestarian budaya dan bahasa daerah di Indonesia, khususnya Bahasa Rejang dari Provinsi Bengkulu.
 
-First, run the development server:
+![Screenshot](https://raw.githubusercontent.com/MFathinHalim/Kamus-Bahasa-Rejang/main/public/preview.png) <!-- ganti kalau punya gambar preview -->
+
+## ✨ Fitur Unggulan
+
+- 🔍 Pencarian kosakata Rejang ↔ Indonesia
+- 📚 Daftar kata lengkap dan mudah diakses
+- 🎨 UI bersih & responsif, nyaman untuk semua perangkat
+- 🌙 Dark Mode bawaan (kalau ada)
+- 🔧 Backend & frontend dalam satu project (Next.js fullstack)
+
+## 🛠 Tech Stack
+
+- **Next.js** – Framework React untuk web app modern
+- **Tailwind CSS** – Styling cepat dan konsisten
+- **MongoDB** – Database kosakata
+- **TypeScript** – Supaya ngoding lebih aman & rapi
+
+## 🚀 Cara Menjalankan Secara Lokal
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 1. Clone repository
+git clone https://github.com/MFathinHalim/Kamus-Bahasa-Rejang.git
+cd Kamus-Bahasa-Rejang
+
+# 2. Install dependencies
+npm install
+
+# 3. Buat file .env.local
+touch .env.local
+
+Isi .env.local dengan:
+> MONGODB_URI=your_mongodb_connection_string
+
+Lalu jalankan development server:
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🧠 Kontribusi
+Punya ide atau kata-kata Rejang baru? Yuk bantu berkembangin kamus ini! Buka issue atau pull request, semua kontribusi sangat dihargai 🙌
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📄 Lisensi
+Proyek ini dirilis dengan lisensi MIT – bebas digunakan dan dikembangkan lebih lanjut.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> Dibuat dengan ❤️ oleh M. Fathin Halim — demi budaya dan bahasa lokal yang nggak boleh punah 🇮🇩✨
