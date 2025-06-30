@@ -1,8 +1,8 @@
 # 🔤 Kamus Bahasa Rejang
 
-**Kamus Bahasa Rejang** adalah aplikasi web modern berbasis Next.js yang memudahkan pengguna untuk menerjemahkan kata-kata dari Bahasa Rejang ke Bahasa Indonesia dan sebaliknya. Proyek ini dibuat untuk mendukung pelestarian budaya dan bahasa daerah di Indonesia, khususnya Bahasa Rejang dari Provinsi Bengkulu.
-
 ![Logo](https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665) <!-- ganti kalau punya gambar preview -->
+
+**Kamus Bahasa Rejang** adalah aplikasi web modern berbasis Next.js yang memudahkan pengguna untuk menerjemahkan kata-kata dari Bahasa Rejang ke Bahasa Indonesia dan sebaliknya. Proyek ini dibuat untuk mendukung pelestarian budaya dan bahasa daerah di Indonesia, khususnya Bahasa Rejang dari Provinsi Bengkulu.
 
 ## ✨ Fitur Unggulan
 
