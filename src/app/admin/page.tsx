@@ -12,27 +12,42 @@ export default function AdminPage() {
   const [hasMore, setHasMore] = useState(true); // Untuk mengecek apakah masih ada data
   const observer = useRef(0); // Untuk intersection observer
   const router = useRouter();
+  const [user, setUser] = useState(null);
 
-  const refreshAccessToken = async () => {
-    try {
-      const response = await fetch("/api/user/session/token/refresh", {
+  const refreshAccessToken = async (): Promise<string | null> => {
+    const res = await fetch("/api/user/session/token/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return data.token ?? null;
+  };
+  useEffect(() => {
+    const init = async () => {
+      const tokenTemp = await refreshAccessToken();
+      if (!tokenTemp) return router.push("/");
+
+      setToken(tokenTemp);
+
+      const res = await fetch("/api/user/session/token/check", {
         method: "POST",
-        credentials: "include",
+        headers: { Authorization: `Bearer ${tokenTemp}` },
       });
 
-      //if (!response.ok) return router.push("/");
+      if (!res.ok) return router.push("/");
 
-      const data = await response.json();
-      //if (!data.token) return router.push("/");
+      const userData = await res.json();
+      if (!userData.atmin) return router.push("/");
 
-      setToken(data.token);
-      fetchWordList(data.token, 1); // Fetch awal dengan halaman 1
-    } catch (error) {
-      console.error("Error refreshing access token:", error);
-      //router.push("/");
-    }
-  };
+      setUser(userData);
+      fetchWordList(tokenTemp, 1);
+    };
 
+    init();
+  }, []);
   useEffect(() => {
     refreshAccessToken();
   }, []);
@@ -60,13 +75,18 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    const response = await fetch(`/api/word/remove/${id}?ongoing=${toggleAdminList}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await fetch(
+      `/api/word/remove/${id}?ongoing=${toggleAdminList}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
 
     if (response.ok) {
-      setWords((prevWords) => prevWords.filter((word: Data) => word._id !== id));
+      setWords((prevWords) =>
+        prevWords.filter((word: Data) => word._id !== id),
+      );
     } else {
       console.error("Failed to delete the word.");
     }
@@ -79,25 +99,24 @@ export default function AdminPage() {
     });
 
     if (response.ok) {
-      setWords((prevWords) => prevWords.filter((word: Data) => word._id !== id));
+      setWords((prevWords) =>
+        prevWords.filter((word: Data) => word._id !== id),
+      );
     } else {
       console.error("Failed to accept the word.");
     }
   };
 
-
-  const toggleList = async () => {
-    setToggleAdminList((prev) => !prev); // Toggle daftar admin/public
-    setWords([]); // Reset daftar kata
-    setPage(1); // Reset halaman
+  const toggleList = () => {
+    setToggleAdminList((p) => !p);
+    setWords([]);
+    setPage(1);
   };
 
   useEffect(() => {
-    if (token) fetchWordList(token, 1); // Fetch ulang daftar kata awal setelah toggle
-  }, [toggleAdminList]); // Akan berjalan setiap kali toggle berubah
+    if (token) fetchWordList(token, 1);
+  }, [toggleAdminList]);
 
-
-  // Infinite Scroll menggunakan Intersection Observer
   const lastWordRef = (node: any) => {
     if (isLoading) return;
     //@ts-ignore
@@ -118,17 +137,21 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center p-6">
-        
       <div className="w-full max-w-lg">
         <header className="w-full flex justify-between items-center pb-6">
-        <a href="/" className="flex items-center gap-2 bg-gray-200 p-2 px-3 rounded-lg">
+          <a
+            href="/"
+            className="flex items-center gap-2 bg-gray-200 p-2 px-3 rounded-lg"
+          >
             <img
               src="https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665"
               alt="Logo"
               width={32}
               height={32}
             />
-            <span className="font-bold hidden md:block text-xl">Kamus Bahasa Rejang</span>
+            <span className="font-bold hidden md:block text-xl">
+              Kamus Bahasa Rejang
+            </span>
           </a>
           <a href="/list" className="text-lg text-gray-600 hover:underline">
             Daftar Kata
@@ -138,7 +161,9 @@ export default function AdminPage() {
         <button
           onClick={toggleList}
           className={`w-full py-2 rounded-full font-semibold mb-4 ${
-            toggleAdminList ? "bg-red-400 hover:bg-red-400 text-white" : "bg-gray-300 text-gray-700"
+            toggleAdminList
+              ? "bg-red-400 hover:bg-red-400 text-white"
+              : "bg-gray-300 text-gray-700"
           }`}
         >
           {toggleAdminList ? "Tampilkan Public List" : "Tampilkan Ongoing List"}
@@ -147,7 +172,9 @@ export default function AdminPage() {
 
       <main className="w-full max-w-lg">
         {errorMessage && <p className="text-red-400">{errorMessage}</p>}
-        {words.length === 0 && !isLoading && <p className="text-gray-400">Tidak ada kata ditemukan.</p>}
+        {words.length === 0 && !isLoading && (
+          <p className="text-gray-400">Tidak ada kata ditemukan.</p>
+        )}
 
         {words.map((word: Data, index) => (
           <div
@@ -177,7 +204,9 @@ export default function AdminPage() {
           </div>
         ))}
 
-        {isLoading && <p className="text-center text-gray-400">Memuat kata...</p>}
+        {isLoading && (
+          <p className="text-center text-gray-400">Memuat kata...</p>
+        )}
       </main>
 
       <footer className="mt-auto text-gray-400 py-4 w-full text-center">
