@@ -1,51 +1,49 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import Link from "next/link";
 
 export default function SignUp() {
+  const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
 
-  const router = useRouter();
-
-  const refreshAccessToken = async () => {
-    const storedToken = sessionStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-      router.push("/");
-    }
-
-    const response = await fetch("/api/user/session/token/refresh", {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data.token) {
-        setToken(data.token);
-        sessionStorage.setItem("token", data.token);
-      }
-    }
-    setIsLoading(false);
-  };
-
+  // Cek apakah user sudah login
   useEffect(() => {
-    refreshAccessToken();
-  }, []);
+    const checkSession = async () => {
+      const response = await fetch("/api/user/session/token/refresh", {
+        method: "POST",
+        credentials: "include",
+      });
 
-  if (isLoading) {
+      if (response.ok) {
+        const data = await response.json();
+        if (data.token) {
+          // Kalau sudah login, langsung redirect ke home
+          router.push("/");
+          return;
+        }
+      }
+
+      setIsCheckingSession(false);
+    };
+
+    checkSession();
+  }, [router]);
+
+  if (isCheckingSession) {
     return <LoadingSpinner />;
   }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setErrorMessage("");
 
     const response = await fetch("/api/user/session/signup", {
       method: "POST",
@@ -55,17 +53,16 @@ export default function SignUp() {
     });
 
     if (response.ok) {
-      const data = await response.json();
-      if (data.token) {
-        setToken(data.token);
-        sessionStorage.setItem("token", data.token);
-        router.push("/"); // Arahkan ke halaman utama setelah sukses Sign Up
-      }
+      // Setelah sukses signup → arahkan ke login
+      router.push("/user/login");
     } else {
+      const data = await response.json().catch(() => null);
+
       setErrorMessage(
-        response.status === 401
-          ? "Invalid username or password. Please try again."
-          : "Server error. Please try again later."
+        data?.message ||
+          (response.status === 400
+            ? "Username sudah digunakan."
+            : "Terjadi kesalahan server. Coba lagi nanti."),
       );
     }
   };
@@ -73,26 +70,38 @@ export default function SignUp() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md">
-      <header className="w-full flex justify-between items-center pb-6">
-        <a href="/" className="flex items-center gap-2 bg-gray-100 p-2 px-3 rounded-lg">
+        <header className="w-full flex justify-between items-center pb-6">
+          <a
+            href="/"
+            className="flex items-center gap-2 bg-gray-100 p-2 px-3 rounded-lg"
+          >
             <img
               src="https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665"
               alt="Logo"
               width={32}
               height={32}
             />
-            <span className="font-bold hidden md:block text-xl">Rejang Dictionary</span>
+            <span className="font-bold hidden md:block text-xl">
+              Rejang Dictionary
+            </span>
           </a>
           <a href="/list" className="text-lg text-gray-600 hover:underline">
             Daftar Kata
           </a>
         </header>
 
-        <h2 className="text-3xl font-bold text-center mb-4 text-red-500">Sign Up</h2>
+        <h2 className="text-3xl font-bold text-center mb-4 text-red-500">
+          Sign Up
+        </h2>
+
         {errorMessage && <p className="text-red-600 mb-4">{errorMessage}</p>}
+
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="username" className="block text-gray-700 font-medium mb-2">
+            <label
+              htmlFor="username"
+              className="block text-gray-700 font-medium mb-2"
+            >
               Username
             </label>
             <input
@@ -106,7 +115,10 @@ export default function SignUp() {
           </div>
 
           <div className="mb-6">
-            <label htmlFor="password" className="block text-gray-700 font-medium mb-2">
+            <label
+              htmlFor="password"
+              className="block text-gray-700 font-medium mb-2"
+            >
               Password
             </label>
             <input
@@ -139,7 +151,10 @@ export default function SignUp() {
 
         <p className="mt-4 text-center text-gray-600">
           Already have an account?{" "}
-          <Link href="/login" className="text-red-500 font-semibold hover:underline">
+          <Link
+            href="/user/login"
+            className="text-red-500 font-semibold hover:underline"
+          >
             Login
           </Link>
         </p>
