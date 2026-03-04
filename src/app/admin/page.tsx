@@ -7,24 +7,23 @@ export default function AdminPage() {
   const [token, setToken] = useState("");
   const [toggleAdminList, setToggleAdminList] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [page, setPage] = useState(1); // Menyimpan nomor halaman untuk pagination
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true); // Untuk mengecek apakah masih ada data
-  const observer = useRef(0); // Untuk intersection observer
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef<any>();
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
 
   const refreshAccessToken = async (): Promise<string | null> => {
     const res = await fetch("/api/user/session/token/refresh", {
       method: "POST",
       credentials: "include",
     });
-
     if (!res.ok) return null;
-
     const data = await res.json();
     return data.token ?? null;
   };
+
   useEffect(() => {
     const init = async () => {
       const tokenTemp = await refreshAccessToken();
@@ -48,16 +47,16 @@ export default function AdminPage() {
 
     init();
   }, []);
+
   useEffect(() => {
-    refreshAccessToken();
-  }, []);
+    if (token) fetchWordList(token, 1);
+  }, [toggleAdminList]);
 
   const fetchWordList = async (tokenTemp: string, pageNumber: number) => {
+    setIsLoading(true);
     const endpoint = toggleAdminList
       ? `/api/word/list/ongoing?page=${pageNumber}`
       : `/api/word/list?page=${pageNumber}`;
-
-    setIsLoading(true);
     const response = await fetch(endpoint, {
       method: "GET",
       headers: { Authorization: `Bearer ${tokenTemp}` },
@@ -65,9 +64,8 @@ export default function AdminPage() {
 
     if (response.ok) {
       const data = await response.json();
-      //@ts-ignore
-      setWords((prevWords) => [...prevWords, ...data.posts]);
-      setHasMore(data.posts.length > 0); // Jika tidak ada data lagi, stop infinite scroll
+      setWords((prev: any) => [...prev, ...data.posts]);
+      setHasMore(data.posts.length > 0);
     } else {
       setErrorMessage("Failed to fetch word list. Please try again later.");
     }
@@ -75,36 +73,22 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    const response = await fetch(
+    const res = await fetch(
       `/api/word/remove/${id}?ongoing=${toggleAdminList}`,
       {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       },
     );
-
-    if (response.ok) {
-      setWords((prevWords) =>
-        prevWords.filter((word: Data) => word._id !== id),
-      );
-    } else {
-      console.error("Failed to delete the word.");
-    }
+    if (res.ok) setWords((prev: any) => prev.filter((w: any) => w._id !== id));
   };
 
   const handleAccept = async (id: string) => {
-    const response = await fetch(`/api/word/accept/${id}`, {
+    const res = await fetch(`/api/word/accept/${id}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
-
-    if (response.ok) {
-      setWords((prevWords) =>
-        prevWords.filter((word: Data) => word._id !== id),
-      );
-    } else {
-      console.error("Failed to accept the word.");
-    }
+    if (res.ok) setWords((prev: any) => prev.filter((w: any) => w._id !== id));
   };
 
   const toggleList = () => {
@@ -113,105 +97,85 @@ export default function AdminPage() {
     setPage(1);
   };
 
-  useEffect(() => {
-    if (token) fetchWordList(token, 1);
-  }, [toggleAdminList]);
-
   const lastWordRef = (node: any) => {
     if (isLoading) return;
-    //@ts-ignore
     if (observer.current) observer.current.disconnect();
-    //@ts-ignore
     observer.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore) {
-        setPage((prevPage) => prevPage + 1);
-      }
+      if (entries[0].isIntersecting && hasMore) setPage((p) => p + 1);
     });
-    //@ts-ignore
     if (node) observer.current.observe(node);
   };
 
   useEffect(() => {
-    if (page > 1) fetchWordList(token, page); // Fetch daftar kata berikutnya saat page bertambah
+    if (page > 1) fetchWordList(token, page);
   }, [page]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-6">
-      <div className="w-full max-w-lg">
-        <header className="w-full flex justify-between items-center pb-6">
+    <div className="min-h-screen bg-[#f3f3f3] px-6 py-8 flex flex-col items-center">
+      <div className="w-full max-w-4xl">
+        <header className="flex justify-between items-center mb-8">
           <a
             href="/"
-            className="flex items-center gap-2 bg-gray-200 p-2 px-3 rounded-lg"
+            className="flex items-center gap-2 bg-red-400 p-3 rounded-xl shadow-md text-white font-bold text-lg"
           >
-            <img
-              src="https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
-            <span className="font-bold hidden md:block text-xl">
-              Kamus Bahasa Rejang
-            </span>
+            Kamus Bahasa Rejang
           </a>
-          <a href="/list" className="text-lg text-gray-600 hover:underline">
-            Daftar Kata
-          </a>
+          <button
+            onClick={toggleList}
+            className={`px-6 py-3 rounded-full font-semibold transition ${
+              toggleAdminList
+                ? "bg-red-400 text-white"
+                : "bg-gray-300 text-gray-700"
+            }`}
+          >
+            {toggleAdminList
+              ? "Tampilkan Public List"
+              : "Tampilkan Ongoing List"}
+          </button>
         </header>
-        <h2 className="text-2xl font-bold mb-6 text-center">Admin Page</h2>
-        <button
-          onClick={toggleList}
-          className={`w-full py-2 rounded-full font-semibold mb-4 ${
-            toggleAdminList
-              ? "bg-red-400 hover:bg-red-400 text-white"
-              : "bg-gray-300 text-gray-700"
-          }`}
-        >
-          {toggleAdminList ? "Tampilkan Public List" : "Tampilkan Ongoing List"}
-        </button>
-      </div>
 
-      <main className="w-full max-w-lg">
-        {errorMessage && <p className="text-red-400">{errorMessage}</p>}
-        {words.length === 0 && !isLoading && (
-          <p className="text-gray-400">Tidak ada kata ditemukan.</p>
-        )}
+        {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
 
-        {words.map((word: Data, index) => (
-          <div
-            key={word._id}
-            ref={index === words.length - 1 ? lastWordRef : null} // Tambahkan ref ke kata terakhir
-            className="p-4 mb-4 rounded-lg bg-gray-100"
-          >
-            <p className="text-lg font-medium text-gray-700 mb-2">
-              {word.Indonesia} - {word.Rejang}
+        <div className="flex flex-col gap-4">
+          {words.length === 0 && !isLoading && (
+            <p className="text-gray-400 text-center">
+              Tidak ada kata ditemukan.
             </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleDelete(word._id)}
-                className="bg-red-400 hover:bg-red-500 text-white py-2 px-4 rounded-lg font-semibold"
-              >
-                Hapus
-              </button>
-              {toggleAdminList && (
+          )}
+
+          {words.map((word: any, index: number) => (
+            <div
+              key={word._id}
+              ref={index === words.length - 1 ? lastWordRef : null}
+              className="bg-white p-6 rounded-xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center"
+            >
+              <p className="text-lg font-semibold mb-2 md:mb-0">
+                {word.Indonesia} - {word.Rejang}
+              </p>
+              <div className="flex gap-3">
                 <button
-                  onClick={() => handleAccept(word._id)}
-                  className="bg-green-400 hover:bg-green-500 text-white py-2 px-4 rounded-lg font-semibold"
+                  onClick={() => handleDelete(word._id)}
+                  className="bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-full font-semibold"
                 >
-                  Terima
+                  Hapus
                 </button>
-              )}
+                {toggleAdminList && (
+                  <button
+                    onClick={() => handleAccept(word._id)}
+                    className="bg-green-400 hover:bg-green-500 text-white px-4 py-2 rounded-full font-semibold"
+                  >
+                    Terima
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {isLoading && (
-          <p className="text-center text-gray-400">Memuat kata...</p>
-        )}
-      </main>
-
-      <footer className="mt-auto text-gray-400 py-4 w-full text-center">
-        © 2025, Admin Page by Fathin
-      </footer>
+          {isLoading && (
+            <p className="text-gray-400 text-center">Memuat kata...</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

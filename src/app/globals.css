@@ -1,11 +1,15 @@
 @import "tailwindcss";
 @font-face {
-  font-family: 'Bangkahulu';
-  src: url('https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/bangkahulu.ttf?v=1712387792024') format('truetype');
+    font-family: "Bangkahulu";
+    src: url("/bangkahulu.ttf") format("truetype");
 }
 
 /* Terapkan font Bangkahulu untuk elemen dengan lang="rejang" */
 .rejang {
-  font-family: 'Bangkahulu', sans-serif;
+    font-family: "Bangkahulu", sans-serif;
+    font-size: 2vw;
 }
-
+button,
+select {
+    cursor: pointer;
+}

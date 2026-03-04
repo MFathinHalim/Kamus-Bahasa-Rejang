@@ -22,25 +22,34 @@ class KamusClass {
     if (!KamusClass.instance) KamusClass.instance = new KamusClass(); //bikin instance baru
     return KamusClass.instance;
   }
-  async translateWithGoogle(input: string, langUser: string, targetLang = "id") {
+  async translateWithGoogle(
+    input: string,
+    langUser: string,
+    targetLang = "id",
+  ) {
     try {
       const response = await fetch(
         `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${langUser}&tl=${targetLang}&dt=t&q=${encodeURIComponent(
-          input
-        )}`
+          input,
+        )}`,
       );
 
       const result = await response.json();
+      console.log(result[0][0][0]);
       return result[0][0][0]; // Mengambil teks hasil terjemahan
     } catch (error) {
       console.error("Translation failed:", error);
       return "Terjemahan gagal.";
     }
   }
-  async translate(input: string | any, rejang: boolean = false, lang: string = "id") {
+  async translate(
+    input: string | any,
+    rejang: boolean = false,
+    lang: string = "id",
+  ) {
     let aksaraKaganga: string = "";
     let result: string = input;
-    if(!rejang) input = await this.translateWithGoogle(input, lang, "id"); // Output: "Halo Dunia"
+    if (!rejang) input = await this.translateWithGoogle(input, lang, "id"); // Output: "Halo Dunia"
     // Tambahkan spasi dan ganti "ku" dengan " saya"
     input = input.replace(/ku\b/g, " saya");
     const words = input.toLowerCase().split(" ");
@@ -51,7 +60,7 @@ class KamusClass {
         words.map(async (word: string) => {
           const doc = await this.data.findOne({ Rejang: word });
           return doc ? doc.Indonesia : word; // Replace if found, otherwise keep the original word
-        })
+        }),
       );
       result = translations.join(" "); // Reconstruct the translated sentence
       result = await this.translateWithGoogle(result, "id", lang);
@@ -59,14 +68,14 @@ class KamusClass {
     } else {
       // Handle Indonesia to Rejang translation with "ê" normalization
       const normalizedWords = words.map((word: string) =>
-        word.replace("ê", "e")
+        word.replace("ê", "e"),
       );
 
       const translations = await Promise.all(
         normalizedWords.map(async (word: string) => {
           const doc = await this.data.findOne({ Indonesia: word });
           return doc ? doc.Rejang.replace("ê", "e") : word; // Replace if found, else keep original
-        })
+        }),
       );
       result = translations.join(" "); // Reconstruct the translated sentence
     }
@@ -82,7 +91,7 @@ class KamusClass {
   async postList(
     page: number = 1,
     limit: number = 10,
-    ongoing: boolean = false
+    ongoing: boolean = false,
   ) {
     // 1. Mencari di data lokal (menggunakan skip dan limit untuk pagination)
     const skip = (page - 1) * limit;
@@ -124,10 +133,14 @@ class KamusClass {
 
       if (Indonesia.trim() !== "" && Rejang.trim() !== "" && !containsBadWord) {
         // Data belum ada dalam database, tambahkan ke database
-        await this.sendDiscordNotification("Kata Baru Ditambahkan", Indonesia, Rejang);
+        await this.sendDiscordNotification(
+          "Kata Baru Ditambahkan",
+          Indonesia,
+          Rejang,
+        );
         await this.ongoingdata.create({ Indonesia, Rejang });
 
-        console.log("hello")
+        console.log("hello");
       } else {
         return 204;
       }
@@ -166,7 +179,7 @@ class KamusClass {
         const updatedOngoing = await this.ongoingdata.findByIdAndUpdate(
           id,
           { Indonesia, Rejang },
-          { new: true } // Mengembalikan dokumen yang diperbarui
+          { new: true }, // Mengembalikan dokumen yang diperbarui
         );
         return updatedOngoing ? 200 : 404; // Return 200 jika sukses, 404 jika tidak ditemukan
       }
@@ -178,7 +191,7 @@ class KamusClass {
     } catch (err) {
       console.error(
         "An error occurred while editing or adding to ongoingdata:",
-        err
+        err,
       );
       return 500; // Internal Server Error
     }
@@ -215,7 +228,7 @@ class KamusClass {
       // Remove the entry from ongoingdata
       await this.ongoingdata.findByIdAndDelete(id);
       console.log(
-        "Data has been accepted and moved/dealt with in the main collection."
+        "Data has been accepted and moved/dealt with in the main collection.",
       );
 
       return 200; // Success
@@ -224,22 +237,26 @@ class KamusClass {
       return 500; // Internal Server Error
     }
   }
-  async sendDiscordNotification(action: string, indonesia: string, rejang: string) {
+  async sendDiscordNotification(
+    action: string,
+    indonesia: string,
+    rejang: string,
+  ) {
     const webhookUrl = process.env.DISCORD_WEBHOOK_URL; // Simpan di .env
     const roleId = "1355742433727615276"; // Ganti dengan ID role yang ingin di-mention
-  
+
     if (!webhookUrl) {
       console.error("Webhook URL tidak ditemukan.");
       return;
     }
-  
-    const content = `📢 <@&${roleId}> **${action}**  
-──────────  
-🌍 **Indonesia:** ${indonesia}  
-──────────  
-📝 **Rejang:** ${rejang}  
-──────────  
-✨ Terima kasih telah berkontribusi!`;  
+
+    const content = `📢 <@&${roleId}> **${action}**
+──────────
+🌍 **Indonesia:** ${indonesia}
+──────────
+📝 **Rejang:** ${rejang}
+──────────
+✨ Terima kasih telah berkontribusi!`;
     try {
       await fetch(webhookUrl, {
         method: "POST",

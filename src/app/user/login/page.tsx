@@ -1,147 +1,90 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // untuk navigasi
-import LoadingSpinner from "@/app/components/LoadingSpinner"; // Komponen spinner (harus kamu buat)
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const router = useRouter();
-
-  const refreshAccessToken = async () => {
-    const storedToken = sessionStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-      router.push("/"); // Arahkan ke halaman utama
-    }
-
-    const response = await fetch("/api/user/session/token/refresh", {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data.token) {
-        setToken(data.token);
-        sessionStorage.setItem("token", data.token);
-      }
-    }
-    setIsLoading(false);
-  };
-
   useEffect(() => {
-    refreshAccessToken();
-  }, []);
+    const refreshToken = async () => {
+      const res = await fetch("/api/user/session/token/refresh", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.token) return router.push("/");
+      }
+      setIsLoading(false);
+    };
+    refreshToken();
+  }, [router]);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+  if (isLoading) return <p className="text-center mt-20 text-xl">Loading...</p>;
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    const response = await fetch("/api/user/session/login", {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch("/api/user/session/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
       credentials: "include",
     });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data.token) {
-        setToken(data.token);
-        sessionStorage.setItem("token", data.token);
-        router.push("/"); // Arahkan ke halaman utama setelah login
-      }
-    } else {
-      setErrorMessage(
-        response.status === 401
-          ? "Invalid username or password. Please try again."
-          : "Server error. Please try again later."
-      );
-    }
+    if (res.ok) router.push("/");
+    else setErrorMessage("Username atau password salah.");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md">
-      <header className="w-full flex justify-between items-center pb-6">
-        <a href="/" className="flex items-center gap-2 bg-gray-100 p-2 px-3 rounded-lg">
-            <img
-              src="https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
-            <span className="font-bold hidden md:block text-xl">Rejang Dictionary</span>
-          </a>
-          <a href="/list" className="text-lg text-gray-600 hover:underline">
-            Daftar Kata
-          </a>
-        </header>
-
-        <h2 className="text-3xl font-bold text-center mb-4 text-red-500">Login</h2>
-        {errorMessage && <p className="text-red-600 mb-4">{errorMessage}</p>}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="username" className="block text-gray-700 font-medium mb-2">
-              Username
-            </label>
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-purple-50 flex items-center justify-center p-6">
+      <div className="w-full max-w-xl bg-white rounded-3xl shadow-sm p-12 flex flex-col items-center animate-fadeIn">
+        <h1 className="text-5xl font-extrabold text-red-400 mb-8">Login</h1>
+        {errorMessage && (
+          <p className="text-red-500 mb-6 text-lg font-medium">
+            {errorMessage}
+          </p>
+        )}
+        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full p-5 text-xl rounded-2xl border-2 border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-300 transition-all bg-gray-50"
+            required
+          />
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-5 text-xl rounded-2xl border-2 border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-300 transition-all bg-gray-50"
+            required
+          />
+          <label className="flex items-center gap-3 text-gray-600 text-lg">
             <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-gray-100"
-              required
+              type="checkbox"
+              onChange={() => setShowPassword((p) => !p)}
+              className="w-5 h-5 accent-red-400"
             />
-          </div>
-
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-gray-700 font-medium mb-2">
-              Password
-            </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-gray-100"
-              required
-            />
-            <div className="mt-2">
-              <label className="text-sm text-gray-600 flex items-center">
-                <input
-                  type="checkbox"
-                  onChange={() => setShowPassword((prev) => !prev)}
-                  className="mr-2"
-                />
-                Show Password
-              </label>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold text-xl"
-          >
+            Show Password
+          </label>
+          <button className="w-full py-5 rounded-2xl text-white font-bold text-2xl bg-gradient-to-r from-red-400 to-pink-400 hover:scale-105 transform transition-all shadow-xl">
             Login
           </button>
         </form>
-
-        <p className="mt-4 text-center text-gray-600">
-          Dont have account?{" "}
-          <Link href="/user/signup" className="text-red-500 font-semibold hover:underline">
+        <p className="mt-8 text-gray-600 text-lg">
+          Belum punya akun?{" "}
+          <a
+            href="/user/signup"
+            className="text-pink-400 font-bold hover:underline"
+          >
             Sign Up
-          </Link>
+          </a>
         </p>
       </div>
     </div>

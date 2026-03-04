@@ -14,13 +14,16 @@ export default function DataListPage() {
   const [newIndonesia, setNewIndonesia] = useState<string>("");
   const [newRejang, setNewRejang] = useState<string>("");
   const observer = useRef<IntersectionObserver | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const fetchDatas = async (newPage: number) => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/word/list?page=${newPage}&limit=${limit}`);
+      const response = await axios.get(
+        `/api/word/list?page=${newPage}&limit=${limit}`,
+      );
       const newDatas: Data[] = response.data.posts;
-      setDatas((prevDatas) => [...prevDatas, ...newDatas]);
+      setDatas((prev) => [...prev, ...newDatas]);
       setHasMore(newDatas.length > 0);
       setLoading(false);
     } catch (error) {
@@ -29,66 +32,21 @@ export default function DataListPage() {
     }
   };
 
-  const refreshAccessToken = async () => {
-    try {
-      if (sessionStorage.getItem("token")) {
-        return sessionStorage.getItem("token");
-      }
-      const response = await fetch("/api/user/session/token/refresh", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      sessionStorage.setItem("token", data.token);
-      return data.token;
-    } catch (error) {
-      console.error("Error refreshing access token:", error);
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const tokenTemp = await refreshAccessToken();
-        if (!tokenTemp) return;
-        setToken(tokenTemp);
-        const response = await fetch(`/api/user/session/token/check`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${tokenTemp}` },
-        });
-        if (!response.ok) return;
-        const check = await response.json();
-        setUser(check);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        setUser(null);
-      }
-    }
-    if (user === null) fetchUserData();
-  }, [user]);
-
   useEffect(() => {
     fetchDatas(page);
   }, [page]);
 
-  const bottomRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore) {
-        setPage((prevPage) => prevPage + 1);
+        setPage((prev) => prev + 1);
       }
     });
-    if (bottomRef.current) {
-      observer.current.observe(bottomRef.current);
-    }
-    return () => {
-      if (observer.current && bottomRef.current) {
-        observer.current.unobserve(bottomRef.current);
-      }
-    };
+
+    if (bottomRef.current) observer.current.observe(bottomRef.current);
+
+    return () => observer.current?.disconnect();
   }, [hasMore]);
 
   const handleAddData = async (e: React.FormEvent) => {
@@ -97,10 +55,15 @@ export default function DataListPage() {
       const response = await fetch("/api/word/add", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-        body: new URLSearchParams({ Indonesia: newIndonesia, Rejang: newRejang }),
+        body: new URLSearchParams({
+          Indonesia: newIndonesia,
+          Rejang: newRejang,
+        }),
       });
+
       if (response.ok) {
         const newData = await response.json();
+        setDatas((prev) => [newData, ...prev]);
         setNewIndonesia("");
         setNewRejang("");
       }
@@ -115,12 +78,16 @@ export default function DataListPage() {
       const response = await fetch(`/api/word/edit/${editData._id}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-        body: new URLSearchParams({ Indonesia: editData.Indonesia, Rejang: editData.Rejang }),
+        body: new URLSearchParams({
+          Indonesia: editData.Indonesia,
+          Rejang: editData.Rejang,
+        }),
       });
+
       if (response.ok) {
-        const updatedData = await response.json();
-        setDatas((prevDatas) =>
-          prevDatas.map((Data) => (Data._id === updatedData._id ? updatedData : Data))
+        const updated = await response.json();
+        setDatas((prev) =>
+          prev.map((d) => (d._id === updated._id ? updated : d)),
         );
         setEditData(null);
       }
@@ -129,95 +96,148 @@ export default function DataListPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
-      <main className="w-full max-w-lg rounded-lg">
-        <header className="w-full flex justify-between items-center pb-6">
-          <a href="/" className="flex items-center gap-2 bg-gray-100 p-2 px-3 rounded-lg">
-            <img
-              src="https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
-            <span className="font-bold hidden md:block text-xl">Rejang Dictionary</span>
-          </a>
-        </header>
-        <h1 className="text-2xl font-bold mb-6 text-center">Word List</h1>
+  const refreshAccessToken = async (): Promise<string | null> => {
+    const res = await fetch("/api/user/session/token/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
 
-        <form onSubmit={handleAddData} className="mb-6 flex w-full gap-2">
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return data.token ?? null;
+  };
+  useEffect(() => {
+    const init = async () => {
+      const tokenTemp = await refreshAccessToken();
+      if (!tokenTemp) return;
+
+      setToken(tokenTemp);
+
+      const res = await fetch("/api/user/session/token/check", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${tokenTemp}` },
+      });
+
+      if (!res.ok) return;
+      const userData = await res.json();
+      setUser(userData);
+    };
+
+    init();
+  }, []);
+  useEffect(() => {
+    refreshAccessToken();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-[#f3f3f3] px-6 py-10">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-semibold bg-gray-200 inline-block px-8 py-3 rounded-xl">
+            Kamus Rejang
+          </h1>
+        </div>
+
+        {/* Add Form */}
+        <form
+          onSubmit={handleAddData}
+          className="grid md:grid-cols-3 gap-4 mb-10"
+        >
           <input
             type="text"
             placeholder="Indonesia"
             value={newIndonesia}
             onChange={(e) => setNewIndonesia(e.target.value)}
-            className="shadow-sm hover:shadow-md p-2 bg-gray-100 border border-gray-200 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-4 rounded-xl bg-gray-200 text-lg focus:outline-none"
           />
           <input
             type="text"
             placeholder="Rejang"
             value={newRejang}
             onChange={(e) => setNewRejang(e.target.value)}
-            className="p-2 bg-gray-100 shadow-sm hover:shadow-md border border-gray-200 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-4 rounded-xl bg-gray-200 text-lg focus:outline-none"
           />
+
           {user ? (
-            <button type="submit" className="p-2 bg-red-400 text-white rounded-lg shadow-md hover:bg-red-500">
-              Add
+            <button className="bg-red-400 text-white rounded-xl text-lg font-semibold hover:bg-red-500">
+              Add Word
             </button>
           ) : (
-            <a href="/user/login" className="p-2 bg-red-400 text-white rounded-lg shadow-md hover:bg-blue-500">
+            <a
+              href="/user/login"
+              className="bg-red-400 text-white rounded-xl text-lg font-semibold flex items-center justify-center"
+            >
               Login
             </a>
           )}
         </form>
 
-        {Datas.map((Data, index) => (
-          <div
-            className="grid grid-cols-2 gap-4 py-4 mt-2 text-center rounded-lg bg-gray-100 shadow-sm hover:shadow-md cursor-pointer"
-            key={index}
-            onClick={() => user && setEditData(Data)}
-          >
-            <div>{Data.Indonesia}</div>
-            <div>{Data.Rejang}</div>
-          </div>
-        ))}
-        {loading && <p className="mt-4 text-center">Loading more data...</p>}
-        {hasMore && <div ref={bottomRef} className="h-10 w-full" />}
+        {/* Word Cards */}
+        <div className="space-y-4">
+          {Datas.map((Data) => (
+            <div
+              key={Data._id}
+              onClick={() => user && setEditData(Data)}
+              className="grid grid-cols-2 gap-6 p-6 rounded-xl bg-gray-200 hover:shadow-lg transition cursor-pointer text-lg"
+            >
+              <div>{Data.Indonesia}</div>
+              <div className="font-semibold">{Data.Rejang}</div>
+            </div>
+          ))}
+        </div>
 
-        {user && editData && (
-          <div className="fixed top-0 left-0 w-full h-full bg-black/20 backdrop-blur-sm flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <h2 className="text-xl font-bold mb-4">Edit Kata</h2>
-              <input
-                type="text"
-                value={editData.Indonesia}
-                onChange={(e) => setEditData({ ...editData, Indonesia: e.target.value })}
-                className="p-2 border rounded-lg w-full mb-2 focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                value={editData.Rejang}
-                onChange={(e) => setEditData({ ...editData, Rejang: e.target.value })}
-                className="p-2 border rounded-lg w-full mb-4 focus:ring-2 focus:ring-blue-500"
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={handleEditData}
-                  className="p-2 bg-green-400 text-white rounded-full px-5 shadow-md hover:bg-green-500"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => setEditData(null)}
-                  className="p-2 bg-red-400 text-white rounded-full px-5 shadow-md hover:bg-red-500"
-                >
-                  Cancel
-                </button>
-              </div>
+        {loading && (
+          <p className="text-center mt-6 text-gray-600">Loading more data...</p>
+        )}
+
+        {hasMore && <div ref={bottomRef} className="h-10 w-full" />}
+      </div>
+
+      {/* Edit Modal */}
+      {user && editData && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex justify-center items-center">
+          <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+            <h2 className="text-2xl font-semibold mb-6 text-center">
+              Edit Word
+            </h2>
+
+            <input
+              type="text"
+              value={editData.Indonesia}
+              onChange={(e) =>
+                setEditData({ ...editData, Indonesia: e.target.value })
+              }
+              className="w-full p-4 rounded-xl bg-gray-200 mb-4"
+            />
+
+            <input
+              type="text"
+              value={editData.Rejang}
+              onChange={(e) =>
+                setEditData({ ...editData, Rejang: e.target.value })
+              }
+              className="w-full p-4 rounded-xl bg-gray-200 mb-6"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleEditData}
+                className="bg-red-400 text-white px-6 py-2 rounded-full"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setEditData(null)}
+                className="bg-gray-300 px-6 py-2 rounded-full"
+              >
+                Cancel
+              </button>
             </div>
           </div>
-        )}
-      </main>
+        </div>
+      )}
     </div>
   );
 }
