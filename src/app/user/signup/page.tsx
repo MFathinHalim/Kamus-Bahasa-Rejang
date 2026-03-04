@@ -1,9 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SignUp() {
   const router = useRouter();
+  const { isLoggedIn } = useAuth();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -11,26 +14,21 @@ export default function SignUp() {
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const res = await fetch("/api/user/session/token/refresh", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.token) return router.push("/");
-      }
+    if (isLoggedIn) {
+      router.push("/");
+    } else {
       setIsCheckingSession(false);
-    };
-    checkSession();
-  }, [router]);
+    }
+  }, [isLoggedIn, router]);
 
-  if (isCheckingSession)
+  if (isCheckingSession) {
     return <p className="text-center mt-20 text-xl">Loading...</p>;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
+
     const res = await fetch("/api/user/session/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -38,8 +36,9 @@ export default function SignUp() {
       credentials: "include",
     });
 
-    if (res.ok) router.push("/user/login");
-    else {
+    if (res.ok) {
+      router.push("/user/login");
+    } else {
       const data = await res.json().catch(() => null);
       setErrorMessage(
         data?.message ||

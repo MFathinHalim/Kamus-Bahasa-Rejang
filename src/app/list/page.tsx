@@ -1,18 +1,20 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
 
 export default function DataListPage() {
+  const { token, user } = useAuth();
+
   const [Datas, setDatas] = useState<Data[]>([]);
   const [page, setPage] = useState<number>(1);
   const limit = 5;
   const [loading, setLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  const [token, setToken] = useState<string>("");
-  const [user, setUser] = useState<any>(null);
   const [editData, setEditData] = useState<Data | null>(null);
   const [newIndonesia, setNewIndonesia] = useState<string>("");
   const [newRejang, setNewRejang] = useState<string>("");
+
   const observer = useRef<IntersectionObserver | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -22,12 +24,14 @@ export default function DataListPage() {
       const response = await axios.get(
         `/api/word/list?page=${newPage}&limit=${limit}`,
       );
+
       const newDatas: Data[] = response.data.posts;
+
       setDatas((prev) => [...prev, ...newDatas]);
       setHasMore(newDatas.length > 0);
-      setLoading(false);
     } catch (error) {
       console.error("Failed to fetch Data list:", error);
+    } finally {
       setLoading(false);
     }
   };
@@ -38,6 +42,7 @@ export default function DataListPage() {
 
   useEffect(() => {
     if (observer.current) observer.current.disconnect();
+
     observer.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore) {
         setPage((prev) => prev + 1);
@@ -51,10 +56,14 @@ export default function DataListPage() {
 
   const handleAddData = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!token) return;
+
     try {
       const response = await fetch("/api/word/add", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: new URLSearchParams({
           Indonesia: newIndonesia,
           Rejang: newRejang,
@@ -73,11 +82,14 @@ export default function DataListPage() {
   };
 
   const handleEditData = async () => {
-    if (!editData) return;
+    if (!editData || !token) return;
+
     try {
       const response = await fetch(`/api/word/edit/${editData._id}`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: new URLSearchParams({
           Indonesia: editData.Indonesia,
           Rejang: editData.Rejang,
@@ -96,51 +108,15 @@ export default function DataListPage() {
     }
   };
 
-  const refreshAccessToken = async (): Promise<string | null> => {
-    const res = await fetch("/api/user/session/token/refresh", {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (!res.ok) return null;
-
-    const data = await res.json();
-    return data.token ?? null;
-  };
-  useEffect(() => {
-    const init = async () => {
-      const tokenTemp = await refreshAccessToken();
-      if (!tokenTemp) return;
-
-      setToken(tokenTemp);
-
-      const res = await fetch("/api/user/session/token/check", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${tokenTemp}` },
-      });
-
-      if (!res.ok) return;
-      const userData = await res.json();
-      setUser(userData);
-    };
-
-    init();
-  }, []);
-  useEffect(() => {
-    refreshAccessToken();
-  }, []);
-
   return (
     <div className="min-h-screen bg-[#f3f3f3] px-6 py-10">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-semibold bg-gray-200 inline-block px-8 py-3 rounded-xl">
             Kamus Rejang
           </h1>
         </div>
 
-        {/* Add Form */}
         <form
           onSubmit={handleAddData}
           className="grid md:grid-cols-3 gap-4 mb-10"
@@ -150,14 +126,14 @@ export default function DataListPage() {
             placeholder="Indonesia"
             value={newIndonesia}
             onChange={(e) => setNewIndonesia(e.target.value)}
-            className="p-4 rounded-xl bg-gray-200 text-lg focus:outline-none"
+            className="p-4 rounded-xl bg-gray-200 text-lg"
           />
           <input
             type="text"
             placeholder="Rejang"
             value={newRejang}
             onChange={(e) => setNewRejang(e.target.value)}
-            className="p-4 rounded-xl bg-gray-200 text-lg focus:outline-none"
+            className="p-4 rounded-xl bg-gray-200 text-lg"
           />
 
           {user ? (
@@ -174,7 +150,6 @@ export default function DataListPage() {
           )}
         </form>
 
-        {/* Word Cards */}
         <div className="space-y-4">
           {Datas.map((Data) => (
             <div
@@ -195,7 +170,6 @@ export default function DataListPage() {
         {hasMore && <div ref={bottomRef} className="h-10 w-full" />}
       </div>
 
-      {/* Edit Modal */}
       {user && editData && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex justify-center items-center">
           <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">

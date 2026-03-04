@@ -1,9 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
   const router = useRouter();
+  const { isLoggedIn, refresh } = useAuth();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -11,32 +14,33 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const refreshToken = async () => {
-      const res = await fetch("/api/user/session/token/refresh", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.token) return router.push("/");
-      }
+    if (isLoggedIn) {
+      router.push("/");
+    } else {
       setIsLoading(false);
-    };
-    refreshToken();
-  }, [router]);
+    }
+  }, [isLoggedIn, router]);
 
-  if (isLoading) return <p className="text-center mt-20 text-xl">Loading...</p>;
+  if (isLoading) {
+    return <p className="text-center mt-20 text-xl">Loading...</p>;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const res = await fetch("/api/user/session/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
       credentials: "include",
     });
-    if (res.ok) router.push("/");
-    else setErrorMessage("Username atau password salah.");
+
+    if (res.ok) {
+      await refresh(); // update auth context
+      router.push("/");
+    } else {
+      setErrorMessage("Username atau password salah.");
+    }
   };
 
   return (

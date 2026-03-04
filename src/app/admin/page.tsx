@@ -1,78 +1,142 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminPage() {
-  const [words, setWords] = useState<any>([]);
-  const [token, setToken] = useState("");
+  const [words, setWords] = useState<Data[]>([]);
+  const [token, setToken] = useState<string | null>(null);
   const [toggleAdminList, setToggleAdminList] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+
   const observer = useRef<IntersectionObserver | null>(null);
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
 
-  const refreshAccessToken = async (): Promise<string | null> => {
-    const res = await fetch("/api/user/session/token/refresh", {
+  /* ===========================
+     AUTH SECTION (NO REPEAT DRAMA)
+     =========================== */
+
+  const getValidToken = async (): Promise<string | null> => {
+    // refresh token
+    const refreshRes = await fetch("/api/user/session/token/refresh", {
       method: "POST",
       credentials: "include",
     });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.token ?? null;
+
+    if (!refreshRes.ok) return null;
+
+    const refreshData = await refreshRes.json();
+    const newToken = refreshData.token;
+    if (!newToken) return null;
+
+    // check role
+    const checkRes = await fetch("/api/user/session/token/check", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${newToken}` },
+    });
+
+    if (!checkRes.ok) return null;
+
+    const user: userType = await checkRes.json();
+    if (!user.atmin) return null;
+
+    return newToken;
   };
+
+  /* ===========================
+     FETCH WORDS
+     =========================== */
+
+  const fetchWordList = useCallback(
+    async (tokenParam: string, pageNumber: number) => {
+      setIsLoading(true);
+
+      const endpoint = toggleAdminList
+        ? `/api/word/list/ongoing?page=${pageNumber}`
+        : `/api/word/list?page=${pageNumber}`;
+
+      const res = await fetch(endpoint, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${tokenParam}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const posts: Word[] = data.posts ?? [];
+
+        setWords((prev) => (pageNumber === 1 ? posts : [...prev, ...posts]));
+
+        setHasMore(posts.length > 0);
+      } else {
+        setErrorMessage("Failed to fetch word list.");
+      }
+
+      setIsLoading(false);
+    },
+    [toggleAdminList],
+  );
+
+  /* ===========================
+     INIT
+     =========================== */
 
   useEffect(() => {
     const init = async () => {
-      const tokenTemp = await refreshAccessToken();
-      if (!tokenTemp) return router.push("/");
+      const validToken = await getValidToken();
+      if (!validToken) return router.push("/");
 
-      setToken(tokenTemp);
-
-      const res = await fetch("/api/user/session/token/check", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${tokenTemp}` },
-      });
-
-      if (!res.ok) return router.push("/");
-
-      const userData = await res.json();
-      if (!userData.atmin) return router.push("/");
-
-      setUser(userData);
-      fetchWordList(tokenTemp, 1);
+      setToken(validToken);
+      fetchWordList(validToken, 1);
     };
 
     init();
-  }, []);
+  }, [fetchWordList, router]);
+
+  /* ===========================
+     TOGGLE LIST
+     =========================== */
 
   useEffect(() => {
-    if (token) fetchWordList(token, 1);
+    if (!token) return;
+
+    setWords([]);
+    setPage(1);
+    fetchWordList(token, 1);
   }, [toggleAdminList]);
 
-  const fetchWordList = async (tokenTemp: string, pageNumber: number) => {
-    setIsLoading(true);
-    const endpoint = toggleAdminList
-      ? `/api/word/list/ongoing?page=${pageNumber}`
-      : `/api/word/list?page=${pageNumber}`;
-    const response = await fetch(endpoint, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${tokenTemp}` },
+  /* ===========================
+     PAGINATION
+     =========================== */
+
+  useEffect(() => {
+    if (page > 1 && token) {
+      fetchWordList(token, page);
+    }
+  }, [page]);
+
+  const lastWordRef = (node: HTMLDivElement | null) => {
+    if (isLoading) return;
+
+    if (observer.current) observer.current.disconnect();
+
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage((prev) => prev + 1);
+      }
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      setWords((prev: any) => [...prev, ...data.posts]);
-      setHasMore(data.posts.length > 0);
-    } else {
-      setErrorMessage("Failed to fetch word list. Please try again later.");
-    }
-    setIsLoading(false);
+    if (node) observer.current.observe(node);
   };
 
+  /* ===========================
+     ACTIONS
+     =========================== */
+
   const handleDelete = async (id: string) => {
+    if (!token) return;
+
     const res = await fetch(
       `/api/word/remove/${id}?ongoing=${toggleAdminList}`,
       {
@@ -80,35 +144,28 @@ export default function AdminPage() {
         headers: { Authorization: `Bearer ${token}` },
       },
     );
-    if (res.ok) setWords((prev: any) => prev.filter((w: any) => w._id !== id));
+
+    if (res.ok) {
+      setWords((prev) => prev.filter((w) => w._id !== id));
+    }
   };
 
   const handleAccept = async (id: string) => {
+    if (!token) return;
+
     const res = await fetch(`/api/word/accept/${id}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (res.ok) setWords((prev: any) => prev.filter((w: any) => w._id !== id));
+
+    if (res.ok) {
+      setWords((prev) => prev.filter((w) => w._id !== id));
+    }
   };
 
-  const toggleList = () => {
-    setToggleAdminList((p) => !p);
-    setWords([]);
-    setPage(1);
-  };
-
-  const lastWordRef = (node: any) => {
-    if (isLoading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore) setPage((p) => p + 1);
-    });
-    if (node) observer.current.observe(node);
-  };
-
-  useEffect(() => {
-    if (page > 1) fetchWordList(token, page);
-  }, [page]);
+  /* ===========================
+     UI
+     =========================== */
 
   return (
     <div className="min-h-screen bg-[#f3f3f3] px-6 py-8 flex flex-col items-center">
@@ -120,8 +177,9 @@ export default function AdminPage() {
           >
             Kamus Bahasa Rejang
           </a>
+
           <button
-            onClick={toggleList}
+            onClick={() => setToggleAdminList((p) => !p)}
             className={`px-6 py-3 rounded-full font-semibold transition ${
               toggleAdminList
                 ? "bg-red-400 text-white"
@@ -143,7 +201,7 @@ export default function AdminPage() {
             </p>
           )}
 
-          {words.map((word: any, index: number) => (
+          {words.map((word, index) => (
             <div
               key={word._id}
               ref={index === words.length - 1 ? lastWordRef : null}
@@ -152,6 +210,7 @@ export default function AdminPage() {
               <p className="text-lg font-semibold mb-2 md:mb-0">
                 {word.Indonesia} - {word.Rejang}
               </p>
+
               <div className="flex gap-3">
                 <button
                   onClick={() => handleDelete(word._id)}
@@ -159,6 +218,7 @@ export default function AdminPage() {
                 >
                   Hapus
                 </button>
+
                 {toggleAdminList && (
                   <button
                     onClick={() => handleAccept(word._id)}
