@@ -10,7 +10,7 @@ export default function AdminPage() {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const observer = useRef<any>();
+  const observer = useRef<IntersectionObserver | null>(null);
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
 
