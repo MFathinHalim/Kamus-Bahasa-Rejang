@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminPage() {
-  const [words, setWords] = useState<Data>([]);
+  const [words, setWords] = useState<any>([]);
   const [token, setToken] = useState("");
   const [toggleAdminList, setToggleAdminList] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
