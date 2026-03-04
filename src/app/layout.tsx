@@ -16,7 +16,7 @@ export const metadata = {
     "Artikel sejarah Indonesia",
     "Rejang Bengkulu",
     "Kamus",
-    "Kamus Bahasa Rejang"
+    "Kamus Bahasa Rejang",
   ],
 
   // Open Graph (OG) Meta Tags for better social media previews
@@ -27,7 +27,7 @@ export const metadata = {
     description: "Terjemahkan bahaso daerah kito!",
     images: [
       {
-        url: "https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665", // Featured image for OG (should be at least 1200x630 for best results)
+        url: "/a.png", // Featured image for OG (should be at least 1200x630 for best results)
         alt: "Kamus Bahasa Rejang Logo",
       },
     ],
@@ -39,12 +39,12 @@ export const metadata = {
     site: "@kamusbahasarejang", // Optional: Twitter handle (if available)
     title: "Kamus Bahasa Rejang",
     description: "Terjemahkan bahaso daerah kito!",
-    images: ["https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665"],
+    images: ["/a.png"],
   },
 
   // Optional - favicon/logo setup
   icons: {
-    icon: "https://cdn.glitch.global/453b0d20-b8fc-4202-841d-a49bccee5c1e/a.png?v=1712387524665",
+    icon: "/a.png",
   },
 };
 
@@ -55,12 +55,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <meta name="google-adsense-account" content="ca-pub-2998592050723815"></meta>
-      <body>
-        {children}
-      </body>
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2998592050723815"
-     crossOrigin="anonymous"></script>
+      <meta
+        name="google-adsense-account"
+        content="ca-pub-2998592050723815"
+      ></meta>
+      <body>{children}</body>
+      <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2998592050723815"
+        crossOrigin="anonymous"
+      ></script>
     </html>
   );
 }
