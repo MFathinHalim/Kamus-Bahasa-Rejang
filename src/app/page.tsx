@@ -15,7 +15,7 @@ export default function Home() {
   const { isLoggedIn, logout } = useAuth();
 
   const [inputWord, setInputWord] = useState("");
-  const [result, setResult] = useState("The Result Will Appear Here");
+  const [result, setResult] = useState("Hasil Muncul Disini");
   const [selectedLang, setSelectedLang] = useState("id");
   const [isRejangMode, setIsRejangMode] = useState(false);
   const [aksaraOnly, setAksaraOnly] = useState(false);
@@ -140,9 +140,21 @@ export default function Home() {
           />
 
           <div className="w-full h-56 p-6 rounded-xl bg-gray-200 text-left overflow-auto text-lg">
-            {result}
-            <br />
-            <span className="rejang">{aksara}</span>
+            {!aksaraOnly ? (
+              <span>
+                {result}
+                <br />
+              </span>
+            ) : (
+              <span></span>
+            )}
+            <span className="rejang">
+              {aksaraOnly
+                ? result === "Hasil Muncul Disini"
+                  ? "kgf"
+                  : result
+                : aksara}
+            </span>
           </div>
         </div>
 
